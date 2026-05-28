@@ -1,5 +1,5 @@
 
- f. # CareerConnect 🚀
+ # CareerConnect 🚀
 
 A modern full-stack job portal platform built using Django and MongoDB Atlas.
 
