@@ -6,6 +6,14 @@ from mongoengine import connect
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+def _normalize_origin(origin: str) -> str:
+    origin = origin.strip()
+    if not origin:
+        return ""
+    if origin.startswith(("http://", "https://")):
+        return origin
+    return f"https://{origin}"
+
 SECRET_KEY = config("SECRET_KEY", default="django-insecure-change-me")
 DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config(
@@ -13,13 +21,19 @@ ALLOWED_HOSTS = config(
     default="127.0.0.1,localhost",
     cast=Csv(),
 )
-CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+CSRF_TRUSTED_ORIGINS = [
+    _normalize_origin(origin)
+    for origin in config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
+    if origin.strip()
+]
 
 RENDER_EXTERNAL_HOSTNAME = config("RENDER_EXTERNAL_HOSTNAME", default="")
 if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in CSRF_TRUSTED_ORIGINS:
-    CSRF_TRUSTED_ORIGINS.append(RENDER_EXTERNAL_HOSTNAME)
+if RENDER_EXTERNAL_HOSTNAME:
+    trusted = _normalize_origin(RENDER_EXTERNAL_HOSTNAME)
+    if trusted not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(trusted)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
