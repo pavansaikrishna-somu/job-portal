@@ -1,23 +1,26 @@
 from datetime import timedelta
 from pathlib import Path
 
-from decouple import config
+from decouple import Csv, config
 from mongoengine import connect
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config("SECRET_KEY", default="django-insecure-change-me")
-DEBUG = config("DEBUG", default=True, cast=bool)
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in config("ALLOWED_HOSTS", default="127.0.0.1,localhost").split(",")
-    if host.strip()
-]
+DEBUG = config("DEBUG", default=False, cast=bool)
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="127.0.0.1,localhost",
+    cast=Csv(),
+)
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())
 
 RENDER_EXTERNAL_HOSTNAME = config("RENDER_EXTERNAL_HOSTNAME", default="")
 if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-    
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(RENDER_EXTERNAL_HOSTNAME)
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -35,6 +38,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -66,10 +70,11 @@ TEMPLATES = [
 WSGI_APPLICATION = "jobportal.wsgi.application"
 ASGI_APPLICATION = "jobportal.asgi.application"
 
+SQLITE_DB_PATH = Path(config("SQLITE_DB_PATH", default=str(BASE_DIR / "db.sqlite3")))
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": SQLITE_DB_PATH,
     }
 }
 
@@ -87,10 +92,16 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = Path(config("STATIC_ROOT", default=str(BASE_DIR / "staticfiles")))
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = Path(config("MEDIA_ROOT", default=str(BASE_DIR / "media")))
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=False, cast=bool)
+CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=False, cast=bool)
+SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=False, cast=bool)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -116,19 +127,17 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-MONGODB_URI = config(
-    "MONGODB_URI",
-    default="mongodb+srv://pavansaikrishna:pavansaikrishna@cluster0.mhiyxgv.mongodb.net/?appName=Cluster0",
-)
+MONGODB_URI = config("MONGODB_URI", default="")
 MONGODB_DB_NAME = config("MONGODB_DB_NAME", default="job_portal_db")
 
-connect(
-    db=MONGODB_DB_NAME,
-    host=MONGODB_URI,
-    alias="default",
-    connect=False,
-    uuidRepresentation="standard",
-)
+if MONGODB_URI:
+    connect(
+        db=MONGODB_DB_NAME,
+        host=MONGODB_URI,
+        alias="default",
+        connect=False,
+        uuidRepresentation="standard",
+    )
 
 MAX_RESUME_UPLOAD_SIZE = config("MAX_RESUME_UPLOAD_SIZE", default=5 * 1024 * 1024, cast=int)
 ALLOWED_RESUME_EXTENSIONS = [".pdf", ".doc", ".docx"]

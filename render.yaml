@@ -17,6 +17,8 @@ services:
         sync: false
       - key: MONGODB_DB_NAME
         value: job_portal_db
+      - key: SQLITE_DB_PATH
+        value: /var/data/db.sqlite3
       - key: MEDIA_ROOT
         value: /var/data/media
       - key: CSRF_TRUSTED_ORIGINS
