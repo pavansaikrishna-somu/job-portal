@@ -1,0 +1,645 @@
+{% extends 'base.html' %}
+{% block title %}Profile | CareerConnect{% endblock %}
+{% block content %}
+<section class="profile-page">
+    <div class="container-fluid px-3 px-lg-5">
+        {% if completion and not completion.is_complete %}
+            <div class="profile-alert glass-card p-3 p-lg-4 mb-4">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <h2 class="h6 mb-1">Complete your profile to continue</h2>
+                        <p class="text-muted mb-0">Finish the required details to unlock applications and hiring actions.</p>
+                    </div>
+                    <span class="badge completion-badge">{{ completion.badge }}</span>
+                </div>
+            </div>
+        {% endif %}
+        <div class="profile-header-actions d-flex justify-content-end mb-3">
+            {% if edit_mode %}
+                <a href="{% url 'users:profile' %}" class="btn btn-outline-dark">Back to Profile</a>
+            {% else %}
+                <a href="{% url 'users:profile_edit' %}" class="btn btn-premium btn-premium-lg">Edit Profile</a>
+            {% endif %}
+        </div>
+        <div class="profile-banner-card glass-card hover-lift mb-4">
+            <div class="profile-banner-bg"></div>
+            <div class="profile-banner-body">
+                <div class="profile-avatar-xl">
+                    {% if profile.profile_image %}
+                        <img src="{{ MEDIA_URL }}{{ profile.profile_image }}" alt="Profile">
+                    {% else %}
+                        <div class="profile-avatar-placeholder d-flex align-items-center justify-content-center">
+                            <i class="fa-solid fa-user fa-2x text-primary"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="profile-banner-details">
+                    <div class="profile-banner-stack">
+                        <div class="profile-banner-name-row">
+                            <h1 class="profile-banner-name">{{ profile.name }}</h1>
+                            <span class="role-pill text-capitalize">{{ profile.role }}</span>
+                            <span class="badge completion-badge">{{ completion.badge }}</span>
+                        </div>
+                        <div class="profile-banner-meta">
+                            <span><i class="fa-solid fa-envelope"></i>{{ profile.email }}</span>
+                            {% if profile.role == 'jobseeker' %}
+                                <span><i class="fa-solid fa-briefcase"></i>{{ profile.professional_title|default:"Professional" }}</span>
+                                <span><i class="fa-solid fa-location-dot"></i>{{ profile.location|default:"Location" }}</span>
+                            {% else %}
+                                <span><i class="fa-solid fa-building"></i>{{ profile.company_name|default:"Company" }}</span>
+                                <span><i class="fa-solid fa-location-dot"></i>{{ profile.company_location|default:"Location" }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-banner-stats">
+                    <div class="banner-stat">
+                        <span class="stat-value">{{ profile.skills|length }}</span>
+                        <span class="stat-label">Skills</span>
+                    </div>
+                    <div class="banner-stat">
+                        <span class="stat-value">
+                            {% if profile.role == 'jobseeker' %}{{ profile.experience_level|default:"N/A" }}{% else %}{{ profile.industry_type|default:"Hiring" }}{% endif %}
+                        </span>
+                        <span class="stat-label">{% if profile.role == 'jobseeker' %}Experience{% else %}Focus{% endif %}</span>
+                    </div>
+                    <div class="banner-stat">
+                        <span class="stat-value">
+                            {% if profile.role == 'jobseeker' %}{{ application_count }}{% else %}{{ job_count }}{% endif %}
+                        </span>
+                        <span class="stat-label">{% if profile.role == 'jobseeker' %}Applications{% else %}Active Jobs{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-banner-progress">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Profile completion</span>
+                    <span class="fw-semibold small">{{ completion.percent }}%</span>
+                </div>
+                <div class="progress">
+                    <progress class="progress-bar" value="{{ completion.percent }}" max="100"></progress>
+                </div>
+            </div>
+        </div>
+        {% if edit_mode %}
+            <form method="post" enctype="multipart/form-data" class="profile-form" novalidate>
+                {% csrf_token %}
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Update required:</strong> Please review the highlighted fields below.
+                    </div>
+                {% endif %}
+                <div class="profile-tabs glass-card p-3 mb-4">
+                    <a class="profile-tab" href="#personal">Personal</a>
+                    <a class="profile-tab" href="#contact">Contact</a>
+                    <a class="profile-tab" href="#skills">Skills</a>
+                    {% if profile.role == 'recruiter' %}
+                        <a class="profile-tab" href="#company">Company</a>
+                        <a class="profile-tab" href="#branding">Branding</a>
+                    {% else %}
+                        <a class="profile-tab" href="#education">Education</a>
+                        <a class="profile-tab" href="#links">Resume & Links</a>
+                    {% endif %}
+                </div>
+                <div class="profile-section glass-card p-4 p-lg-5 mb-4">
+                    <div id="personal" class="section-header mb-4">
+                        <h2 class="h5 mb-1">Personal Information</h2>
+                        <p class="text-muted mb-0">Keep your identity fresh and professional.</p>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" name="name" placeholder="Name" value="{{ form.name.value|default:'' }}" required>
+                                <label>Full Name</label>
+                            </div>
+                        </div>
+                        {% if profile.role == 'jobseeker' %}
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" placeholder="Email" value="{{ profile.email }}" disabled>
+                                    <label>Email</label>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="email" class="form-control" name="company_email" placeholder="Company Email" value="{{ form.company_email.value|default:'' }}" required>
+                                    <label>Company Email</label>
+                                </div>
+                                {% if form.company_email.errors %}<div class="text-danger small mt-2">{{ form.company_email.errors.0 }}</div>{% endif %}
+                            </div>
+                        {% endif %}
+                        {% if profile.role == 'jobseeker' %}
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="professional_title" placeholder="Professional Title" value="{{ form.professional_title.value|default:'' }}" required>
+                                    <label>Professional Title</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="location" placeholder="Location" value="{{ form.location.value|default:'' }}" required>
+                                    <label>Location</label>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="company_name" placeholder="Company Name" value="{{ form.company_name.value|default:'' }}" required>
+                                    <label>Company Name</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="url" class="form-control" name="company_website" placeholder="Company Website" value="{{ form.company_website.value|default:'' }}" required>
+                                    <label>Company Website</label>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="profile-section glass-card p-4 p-lg-5 mb-4">
+                    <div id="contact" class="section-header mb-4">
+                        <h2 class="h5 mb-1">Contact Information</h2>
+                        <p class="text-muted mb-0">Let employers reach you quickly.</p>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" name="phone" placeholder="Phone" value="{{ form.phone.value|default:'' }}" required>
+                                <label>Phone</label>
+                            </div>
+                        </div>
+                        {% if profile.role == 'recruiter' %}
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="company_location" placeholder="Company Location" value="{{ form.company_location.value|default:'' }}" required>
+                                    <label>Company Location</label>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="profile-section glass-card p-4 p-lg-5 mb-4">
+                    <div id="skills" class="section-header mb-4">
+                        <h2 class="h5 mb-1">Skills</h2>
+                        <p class="text-muted mb-0">Highlight tools and strengths that matter.</p>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" name="skills" placeholder="Skills" value="{{ form.skills.value|default:'' }}" {% if profile.role == 'jobseeker' %}required{% endif %}>
+                                <label>{% if profile.role == 'recruiter' %}Hiring Skills (optional){% else %}Skills (Python, Django, React){% endif %}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if profile.role == 'jobseeker' %}
+                    <div class="profile-section glass-card p-4 p-lg-5 mb-4">
+                        <div id="education" class="section-header mb-4">
+                            <h2 class="h5 mb-1">Education & Experience</h2>
+                            <p class="text-muted mb-0">Tell recruiters about your academic background.</p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="education" placeholder="Education" value="{{ form.education.value|default:'' }}" required>
+                                    <label>Education</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="college" placeholder="College" value="{{ form.college.value|default:'' }}" required>
+                                    <label>College / University</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="graduation_year" placeholder="Graduation Year" value="{{ form.graduation_year.value|default:'' }}" required>
+                                    <label>Graduation Year</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="experience_level" placeholder="Experience Level" value="{{ form.experience_level.value|default:'' }}" required>
+                                    <label>Experience Level</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-section glass-card p-4 p-lg-5 mb-4">
+                        <div id="links" class="section-header mb-4">
+                            <h2 class="h5 mb-1">Resume & Links</h2>
+                            <p class="text-muted mb-0">Add a resume and public profiles for validation.</p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label class="form-label">Resume Upload</label>
+                                <input type="file" class="form-control profile-file-input" name="resume" accept=".pdf,.doc,.docx" {% if not profile.resume %}required{% endif %}>
+                                {% if form.resume.errors %}<div class="text-danger small mt-2">{{ form.resume.errors.0 }}</div>{% endif %}
+                                {% if profile.resume %}
+                                    <a class="file-preview-link" href="{{ MEDIA_URL }}{{ profile.resume }}" target="_blank" rel="noopener">View current resume</a>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="url" class="form-control" name="linkedin_url" placeholder="LinkedIn" value="{{ form.linkedin_url.value|default:'' }}" required>
+                                    <label>LinkedIn Profile</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="url" class="form-control" name="github_url" placeholder="GitHub" value="{{ form.github_url.value|default:'' }}" required>
+                                    <label>GitHub / Portfolio Link</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="career_objective" placeholder="Career Objective" rows="5" style="height: 160px" required>{{ form.career_objective.value|default:'' }}</textarea>
+                                    <label>Career Objective / Bio</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="certifications" placeholder="Certifications" value="{{ form.certifications.value|default:'' }}">
+                                    <label>Certifications (optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="projects" placeholder="Projects" value="{{ form.projects.value|default:'' }}">
+                                    <label>Projects (optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="preferred_role" placeholder="Preferred Role" value="{{ form.preferred_role.value|default:'' }}">
+                                    <label>Preferred Job Role (optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="expected_salary" placeholder="Expected Salary" value="{{ form.expected_salary.value|default:'' }}">
+                                    <label>Expected Salary (optional)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="profile-section glass-card p-4 p-lg-5 mb-4">
+                        <div id="company" class="section-header mb-4">
+                            <h2 class="h5 mb-1">Company Details</h2>
+                            <p class="text-muted mb-0">Introduce your brand to job seekers.</p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="industry_type" placeholder="Industry" value="{{ form.industry_type.value|default:'' }}" required>
+                                    <label>Industry Type</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="hiring_role" placeholder="Recruiter Designation" value="{{ form.hiring_role.value|default:'' }}" required>
+                                    <label>Recruiter Designation</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="employees_count" placeholder="Employees" value="{{ form.employees_count.value|default:'' }}" required>
+                                    <label>Number of Employees</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="headquarters" placeholder="Headquarters" value="{{ form.headquarters.value|default:'' }}">
+                                    <label>Headquarters (optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="company_description" placeholder="Company Description" rows="6" style="height: 180px" required>{{ form.company_description.value|default:'' }}</textarea>
+                                    <label>Company Description</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-section glass-card p-4 p-lg-5 mb-4">
+                        <div id="branding" class="section-header mb-4">
+                            <h2 class="h5 mb-1">Branding & Verification</h2>
+                            <p class="text-muted mb-0">Build trust with candidates through strong branding.</p>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <label class="form-label">Company Logo</label>
+                                <input type="file" class="form-control profile-file-input" name="company_logo" accept="image/*" {% if not profile.company_logo %}required{% endif %}>
+                                {% if form.company_logo.errors %}<div class="text-danger small mt-2">{{ form.company_logo.errors.0 }}</div>{% endif %}
+                                {% if profile.company_logo %}
+                                    <div class="file-preview-row">
+                                        <img src="{{ MEDIA_URL }}{{ profile.company_logo }}" alt="Company Logo">
+                                        <span class="text-muted small">Current logo</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="url" class="form-control" name="linkedin_company" placeholder="LinkedIn Company" value="{{ form.linkedin_company.value|default:'' }}">
+                                    <label>LinkedIn Company Page (optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" name="founded_year" placeholder="Founded Year" value="{{ form.founded_year.value|default:'' }}">
+                                    <label>Founded Year (optional)</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control" name="culture_description" placeholder="Company Culture" rows="6" style="height: 180px">{{ form.culture_description.value|default:'' }}</textarea>
+                                    <label>Company Culture Description (optional)</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="profile-section glass-card p-4 p-lg-5 mb-4">
+                    <div class="section-header mb-4">
+                        <h2 class="h5 mb-1">Profile Photo</h2>
+                        <p class="text-muted mb-0">Add a professional photo to build credibility.</p>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label">Profile Image</label>
+                            <input type="file" class="form-control profile-file-input" name="profile_image" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap gap-3 justify-content-end">
+                    <a href="{% url 'users:profile' %}" class="btn btn-outline-dark">Cancel</a>
+                    <button type="submit" class="btn btn-premium btn-premium-lg">Save Changes</button>
+                </div>
+            </form>
+        {% else %}
+            <div class="profile-view">
+                <div class="profile-section-card glass-card hover-lift p-4 p-lg-5 mb-4">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <span class="section-icon"><i class="fa-solid fa-id-badge"></i></span>
+                        <div>
+                            <h2 class="h5 mb-1">Personal Information</h2>
+                            <p class="text-muted mb-0">Core identity details shown to recruiters.</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Full Name</span>
+                            <span class="info-value">{{ profile.name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Role</span>
+                            <span class="info-value text-capitalize">{{ profile.role }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">{{ profile.email }}</span>
+                        </div>
+                        {% if profile.role == 'jobseeker' %}
+                            <div class="info-item">
+                                <span class="info-label">Professional Title</span>
+                                <span class="info-value">{{ profile.professional_title|default:"Not added" }}</span>
+                            </div>
+                        {% else %}
+                            <div class="info-item">
+                                <span class="info-label">Designation</span>
+                                <span class="info-value">{{ profile.hiring_role|default:"Not added" }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="profile-section-card glass-card hover-lift p-4 p-lg-5 mb-4">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <span class="section-icon"><i class="fa-solid fa-phone"></i></span>
+                        <div>
+                            <h2 class="h5 mb-1">Contact Information</h2>
+                            <p class="text-muted mb-0">Primary channels for opportunities.</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">{{ profile.phone|default:"Not added" }}</span>
+                        </div>
+                        {% if profile.role == 'jobseeker' %}
+                            <div class="info-item">
+                                <span class="info-label">Location</span>
+                                <span class="info-value">{{ profile.location|default:"Not added" }}</span>
+                            </div>
+                        {% else %}
+                            <div class="info-item">
+                                <span class="info-label">Company Email</span>
+                                <span class="info-value">{{ profile.company_email|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Company Location</span>
+                                <span class="info-value">{{ profile.company_location|default:"Not added" }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="profile-section-card glass-card hover-lift p-4 p-lg-5 mb-4">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <span class="section-icon"><i class="fa-solid fa-user-astronaut"></i></span>
+                        <div>
+                            <h2 class="h5 mb-1">Professional Details</h2>
+                            <p class="text-muted mb-0">Experience, education, and focus.</p>
+                        </div>
+                    </div>
+                    {% if profile.role == 'jobseeker' %}
+                        <div class="profile-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Education</span>
+                                <span class="info-value">{{ profile.education|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">College / University</span>
+                                <span class="info-value">{{ profile.college|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Graduation Year</span>
+                                <span class="info-value">{{ profile.graduation_year|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Experience Level</span>
+                                <span class="info-value">{{ profile.experience_level|default:"Not added" }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="profile-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Company Name</span>
+                                <span class="info-value">{{ profile.company_name|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Industry</span>
+                                <span class="info-value">{{ profile.industry_type|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Employees</span>
+                                <span class="info-value">{{ profile.employees_count|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Hiring Focus</span>
+                                <span class="info-value">{{ profile.hiring_role|default:"Not added" }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="profile-section-card glass-card hover-lift p-4 p-lg-5 mb-4">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <span class="section-icon"><i class="fa-solid fa-layer-group"></i></span>
+                        <div>
+                            <h2 class="h5 mb-1">Skills & Expertise</h2>
+                            <p class="text-muted mb-0">Highlighted tools and domains.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for skill in profile.skills %}
+                            <span class="badge skill-pill">{{ skill }}</span>
+                        {% empty %}
+                            <span class="text-muted">No skills added yet.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="profile-section-card glass-card hover-lift p-4 p-lg-5 mb-4">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <span class="section-icon"><i class="fa-solid fa-file-arrow-up"></i></span>
+                        <div>
+                            <h2 class="h5 mb-1">Resume & Portfolio</h2>
+                            <p class="text-muted mb-0">Documents and work samples.</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Resume</span>
+                            {% if profile.resume %}
+                                <a class="profile-link" href="{{ MEDIA_URL }}{{ profile.resume }}" target="_blank" rel="noopener"><i class="fa-solid fa-file"></i>View resume</a>
+                            {% else %}
+                                <span class="info-value">Not uploaded</span>
+                            {% endif %}
+                        </div>
+                        {% if profile.role == 'jobseeker' %}
+                            <div class="info-item">
+                                <span class="info-label">Preferred Role</span>
+                                <span class="info-value">{{ profile.preferred_role|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Expected Salary</span>
+                                <span class="info-value">{{ profile.expected_salary|default:"Not added" }}</span>
+                            </div>
+                        {% else %}
+                            <div class="info-item">
+                                <span class="info-label">Company Website</span>
+                                {% if profile.company_website %}
+                                    <a class="profile-link" href="{{ profile.company_website }}" target="_blank" rel="noopener"><i class="fa-solid fa-globe"></i>Visit website</a>
+                                {% else %}
+                                    <span class="info-value">Not added</span>
+                                {% endif %}
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">LinkedIn Company</span>
+                                {% if profile.linkedin_company %}
+                                    <a class="profile-link" href="{{ profile.linkedin_company }}" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i>View LinkedIn</a>
+                                {% else %}
+                                    <span class="info-value">Not added</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="profile-section-card glass-card hover-lift p-4 p-lg-5 mb-4">
+                    <div class="section-header d-flex align-items-center gap-3 mb-4">
+                        <span class="section-icon"><i class="fa-solid fa-link"></i></span>
+                        <div>
+                            <h2 class="h5 mb-1">Social Links</h2>
+                            <p class="text-muted mb-0">Share your professional presence.</p>
+                        </div>
+                    </div>
+                    <div class="profile-info-grid">
+                        {% if profile.role == 'jobseeker' %}
+                            <div class="info-item">
+                                <span class="info-label">LinkedIn</span>
+                                {% if profile.linkedin_url %}
+                                    <a class="profile-link" href="{{ profile.linkedin_url }}" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i>Open LinkedIn</a>
+                                {% else %}
+                                    <span class="info-value">Not added</span>
+                                {% endif %}
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">GitHub / Portfolio</span>
+                                {% if profile.github_url %}
+                                    <a class="profile-link" href="{{ profile.github_url }}" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i>Open Github/Portfolio</a>
+                                {% else %}
+                                    <span class="info-value">Not added</span>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="info-item">
+                                <span class="info-label">Company Website</span>
+                                {% if profile.company_website %}
+                                    <a class="profile-link" href="{{ profile.company_website }}" target="_blank" rel="noopener"><i class="fa-solid fa-globe"></i>Visit website</a>
+                                {% else %}
+                                    <span class="info-value">Not added</span>
+                                {% endif %}
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">LinkedIn Company</span>
+                                {% if profile.linkedin_company %}
+                                    <a class="profile-link" href="{{ profile.linkedin_company }}" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i>View LinkedIn</a>
+                                {% else %}
+                                    <span class="info-value">Not added</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if profile.role == 'recruiter' %}
+                    <div class="profile-section-card glass-card hover-lift p-4 p-lg-5 mb-4">
+                        <div class="section-header d-flex align-items-center gap-3 mb-4">
+                            <span class="section-icon"><i class="fa-solid fa-building"></i></span>
+                            <div>
+                                <h2 class="h5 mb-1">Company Information</h2>
+                                <p class="text-muted mb-0">Employer branding and trust signals.</p>
+                            </div>
+                        </div>
+                        <div class="profile-info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Company Name</span>
+                                <span class="info-value">{{ profile.company_name|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Company Email</span>
+                                <span class="info-value">{{ profile.company_email|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Headquarters</span>
+                                <span class="info-value">{{ profile.headquarters|default:"Not added" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Founded</span>
+                                <span class="info-value">{{ profile.founded_year|default:"Not added" }}</span>
+                            </div>
+                        </div>
+                        <div class="profile-bio mt-4">
+                            <span class="info-label">Company Description</span>
+                            <p class="info-value mt-2">{{ profile.company_description|default:"Add a company description." }}</p>
+                        </div>
+                        <div class="profile-bio mt-4">
+                            <span class="info-label">Recruiter Bio</span>
+                            <p class="info-value mt-2">{{ profile.culture_description|default:"Add a recruiter bio or company culture description." }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
