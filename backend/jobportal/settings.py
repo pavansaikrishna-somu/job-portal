@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 from decouple import Csv, config
 from mongoengine import connect
 
@@ -85,13 +86,19 @@ TEMPLATES = [
 WSGI_APPLICATION = "jobportal.wsgi.application"
 ASGI_APPLICATION = "jobportal.asgi.application"
 
-SQLITE_DB_PATH = Path(config("SQLITE_DB_PATH", default=str(BASE_DIR / "db.sqlite3")))
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": SQLITE_DB_PATH,
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    SQLITE_DB_PATH = Path(config("SQLITE_DB_PATH", default=str(BASE_DIR / "db.sqlite3")))
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": SQLITE_DB_PATH,
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
