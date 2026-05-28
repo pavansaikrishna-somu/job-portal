@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 from pathlib import Path
 
@@ -141,7 +142,7 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-MONGODB_URI = config("MONGODB_URI", default="")
+MONGODB_URI = os.environ.get("MONGODB_URI", config("MONGODB_URI", default=""))
 MONGODB_DB_NAME = config("MONGODB_DB_NAME", default="job_portal_db")
 
 if MONGODB_URI:
