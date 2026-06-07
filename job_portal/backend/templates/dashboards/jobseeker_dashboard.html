@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block title %}Job Seeker Dashboard | CareerConnect{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Job Seeker Dashboard</h1>
+            <p class="text-muted mb-0">Track applications, stay organized, and accelerate your career journey.</p>
+        </div>
+        <a href="{% url 'jobs:job_list' %}" class="btn btn-premium">Explore Jobs</a>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card stat-card--primary h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 small mb-1">Total Applications</p>
+                        <h3 class="mb-0">{{ stats.total }}</h3>
+                    </div>
+                    <span class="stat-icon"><i class="fa-solid fa-paper-plane"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card--amber h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 small mb-1">Pending</p>
+                        <h3 class="mb-0">{{ stats.pending }}</h3>
+                    </div>
+                    <span class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card--teal h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 small mb-1">Reviewed</p>
+                        <h3 class="mb-0">{{ stats.reviewed }}</h3>
+                    </div>
+                    <span class="stat-icon"><i class="fa-solid fa-eye"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card--violet h-100">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-white-50 small mb-1">Shortlisted</p>
+                        <h3 class="mb-0">{{ stats.shortlisted }}</h3>
+                    </div>
+                    <span class="stat-icon"><i class="fa-solid fa-star"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="glass-card hover-lift">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Application Tracking</h2>
+                    <div class="table-responsive">
+                        <table class="table table-premium align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Job</th>
+                                    <th>Status</th>
+                                    <th>Applied At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                    <tr>
+                                        <td>{{ application.job_title }}</td>
+                                        <td>
+                                            <span class="badge
+                                                {% if application.status == 'Shortlisted' %}text-bg-success
+                                                {% elif application.status == 'Rejected' %}text-bg-danger
+                                                {% elif application.status == 'Reviewed' %}text-bg-info
+                                                {% else %}text-bg-warning{% endif %}">
+                                                {{ application.status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ application.applied_at|localtime|date:"d M Y, h:i A" }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="3" class="text-center py-4">No applications yet.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card hover-lift p-4 h-100">
+                <h2 class="h5 mb-3">Profile Completion</h2>
+                <p class="text-muted">Keep your profile updated to stand out to recruiters.</p>
+                <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar" style="width: 70%;"></div>
+                </div>
+                <a href="{% url 'users:profile' %}" class="btn btn-outline-dark w-100">Update Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

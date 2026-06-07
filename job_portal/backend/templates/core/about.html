@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}About | CareerConnect{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="glass-card hover-lift p-4">
+                <h1 class="h2 mb-3">About CareerConnect</h1>
+                <p class="text-secondary">
+                    This platform helps job seekers discover opportunities and enables recruiters to manage job posts and applications efficiently.
+                </p>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <h5><i class="fa-solid fa-user-check text-primary me-2"></i>Role-Based Access</h5>
+                            <p class="mb-0">Separate dashboards and workflows for job seekers and recruiters.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <h5><i class="fa-solid fa-file-arrow-up text-primary me-2"></i>Resume Uploads</h5>
+                            <p class="mb-0">Applicants can apply online and upload resumes in PDF/DOC/DOCX format.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <h5><i class="fa-solid fa-database text-primary me-2"></i>MongoDB Atlas</h5>
+                            <p class="mb-0">Portal data is stored in cloud-hosted MongoDB for scalable data access.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="feature-box">
+                            <h5><i class="fa-solid fa-chart-line text-primary me-2"></i>Insightful Dashboards</h5>
+                            <p class="mb-0">Visual charts and statistics for tracking jobs, applications, and statuses.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

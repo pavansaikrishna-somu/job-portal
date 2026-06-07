@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block title %}Apply Job | CareerConnect{% endblock %}
+{% block content %}
+<section class="apply-page">
+    <div class="container-fluid px-3 px-lg-5">
+        <div class="apply-header glass-card hover-lift p-4 p-lg-5 mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                    <p class="text-uppercase text-muted small fw-semibold mb-2">Application for</p>
+                    <h1 class="h3 mb-2">{{ job.title }}</h1>
+                    <p class="text-muted mb-0">{{ job.company }} • {{ job.location }}</p>
+                </div>
+                <div class="apply-progress">
+                    <span class="text-muted small">Application progress</span>
+                    <div class="progress mt-2">
+                        <div class="progress-bar" style="width: 65%;"></div>
+                    </div>
+                    <span class="small fw-semibold">65%</span>
+                </div>
+            </div>
+        </div>
+        <form method="post" enctype="multipart/form-data" class="apply-form" novalidate>
+            {% csrf_token %}
+            <div class="apply-section glass-card hover-lift p-4 p-lg-5 mb-4">
+                <div class="section-header d-flex align-items-center gap-3 mb-4">
+                    <span class="section-icon"><i class="fa-solid fa-user"></i></span>
+                    <div>
+                        <h2 class="h5 mb-1">Candidate Information</h2>
+                        <p class="text-muted mb-0">Tell us who you are and how to reach you.</p>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="full_name" placeholder="Full Name" required>
+                            <label>Full Name</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="email" class="form-control" name="email" placeholder="Email Address" required>
+                            <label>Email Address</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="phone" placeholder="Phone Number" required>
+                            <label>Phone Number</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="location" placeholder="Current Location" required>
+                            <label>Current Location</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="url" class="form-control" name="linkedin" placeholder="LinkedIn Profile URL">
+                            <label>LinkedIn Profile URL</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="url" class="form-control" name="portfolio" placeholder="Portfolio / GitHub URL">
+                            <label>Portfolio / GitHub URL</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="apply-section glass-card hover-lift p-4 p-lg-5 mb-4">
+                <div class="section-header d-flex align-items-center gap-3 mb-4">
+                    <span class="section-icon"><i class="fa-solid fa-briefcase"></i></span>
+                    <div>
+                        <h2 class="h5 mb-1">Professional Details</h2>
+                        <p class="text-muted mb-0">Share your current role and availability.</p>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="current_role" placeholder="Current Role" required>
+                            <label>Current Role / Designation</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="experience_years" placeholder="Years of Experience" required>
+                            <label>Years of Experience</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="qualification" placeholder="Highest Qualification" required>
+                            <label>Highest Qualification</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="expected_salary" placeholder="Expected Salary" required>
+                            <label>Expected Salary</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="notice_period" placeholder="Notice Period" required>
+                            <label>Notice Period</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" name="work_mode" required>
+                                <option value="" selected>Select</option>
+                                <option>Remote</option>
+                                <option>Hybrid</option>
+                                <option>Onsite</option>
+                            </select>
+                            <label>Preferred Work Mode</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="apply-section glass-card hover-lift p-4 p-lg-5 mb-4">
+                <div class="section-header d-flex align-items-center gap-3 mb-4">
+                    <span class="section-icon"><i class="fa-solid fa-layer-group"></i></span>
+                    <div>
+                        <h2 class="h5 mb-1">Skills & Expertise</h2>
+                        <p class="text-muted mb-0">Highlight the strengths you bring to this role.</p>
+                    </div>
+                </div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="technical_skills" placeholder="Technical Skills" required>
+                            <label>Technical Skills</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="certifications" placeholder="Certifications">
+                            <label>Certifications</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-floating">
+                            <textarea class="form-control" name="strengths" placeholder="Key Strengths" rows="5" style="height: 160px"></textarea>
+                            <label>Key Strengths</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="apply-section glass-card hover-lift p-4 p-lg-5 mb-4">
+                <div class="section-header d-flex align-items-center gap-3 mb-4">
+                    <span class="section-icon"><i class="fa-solid fa-file-arrow-up"></i></span>
+                    <div>
+                        <h2 class="h5 mb-1">Resume & Documents</h2>
+                        <p class="text-muted mb-0">Upload a resume that represents your best work.</p>
+                    </div>
+                </div>
+                <div class="apply-upload">
+                    <label class="form-label">Resume (PDF/DOC/DOCX)</label>
+                    <input type="file" class="form-control" name="resume" accept=".pdf,.doc,.docx" required>
+                    <p class="text-muted small mb-0">Drag and drop your resume here, or click to upload.</p>
+                    {% if form.resume.errors %}<div class="text-danger small mt-1">{{ form.resume.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+            <div class="apply-section glass-card hover-lift p-4 p-lg-5 mb-5">
+                <div class="section-header d-flex align-items-center gap-3 mb-4">
+                    <span class="section-icon"><i class="fa-solid fa-comments"></i></span>
+                    <div>
+                        <h2 class="h5 mb-1">Application Questions</h2>
+                        <p class="text-muted mb-0">Help us understand your motivation and availability.</p>
+                    </div>
+                </div>
+                <div class="form-floating">
+                    <textarea class="form-control" name="cover_letter" placeholder="Application Questions" rows="8" style="height: 220px" required>{{ form.cover_letter.value|default:'' }}</textarea>
+                    <label>Why are you interested? Why should we hire you? Availability to join?</label>
+                </div>
+                {% if form.cover_letter.errors %}<div class="text-danger small mt-2">{{ form.cover_letter.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="apply-actions glass-card">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <span class="text-muted small">Ensure all required fields are completed before submitting.</span>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-outline-dark">Save Draft</button>
+                        <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-outline-dark">Cancel</a>
+                        <button type="submit" class="btn btn-premium">Submit Application</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

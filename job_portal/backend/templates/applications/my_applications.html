@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load tz %}
+{% block title %}My Applications | CareerConnect{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">My Applications</h1>
+            <p class="text-muted mb-0">Track every submission and status update in one place.</p>
+        </div>
+        <a href="{% url 'jobs:job_list' %}" class="btn btn-premium">Browse Jobs</a>
+    </div>
+    <div class="glass-card hover-lift">
+        <div class="table-responsive">
+            <table class="table table-premium align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Status</th>
+                        <th>Applied Date</th>
+                        <th>Resume</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in applications %}
+                        <tr>
+                            <td>{{ application.job_title }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if application.status == 'Shortlisted' %}text-bg-success
+                                    {% elif application.status == 'Rejected' %}text-bg-danger
+                                    {% elif application.status == 'Reviewed' %}text-bg-info
+                                    {% else %}text-bg-warning{% endif %}">
+                                    {{ application.status }}
+                                </span>
+                            </td>
+                            <td>{{ application.applied_at|localtime|date:"d M Y, h:i A" }}</td>
+                            <td>
+                                <a href="{{ MEDIA_URL }}{{ application.resume }}" target="_blank" class="btn btn-sm btn-outline-dark">View Resume</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="4" class="text-center py-4">You have not applied for any jobs yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

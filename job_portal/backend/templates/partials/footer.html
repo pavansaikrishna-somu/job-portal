@@ -1,0 +1,33 @@
+<footer class="portal-footer py-5 mt-5">
+    <div class="container">
+        <div class="row gy-4 align-items-start">
+            <div class="col-lg-5">
+                <h5 class="mb-2 text-white">CareerConnect</h5>
+                <p class="mb-3 text-light-emphasis">
+                    Connecting Talent with Opportunity through a premium hiring experience for modern teams.
+                </p>
+                <div class="d-flex gap-3">
+                    <span class="icon-pill bg-light text-dark"><i class="fa-brands fa-linkedin-in"></i></span>
+                    <span class="icon-pill bg-light text-dark"><i class="fa-brands fa-x-twitter"></i></span>
+                    <span class="icon-pill bg-light text-dark"><i class="fa-brands fa-instagram"></i></span>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <h6 class="text-white">Platform</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'jobs:job_list' %}" class="footer-link">Browse Jobs</a></li>
+                    <li><a href="{% url 'core:about' %}" class="footer-link">About</a></li>
+                    <li><a href="{% url 'core:contact' %}" class="footer-link">Contact</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-4">
+                <h6 class="text-white">Stay Updated</h6>
+                <p class="text-light-emphasis small">Weekly career insights and hiring trends.</p>
+                <div class="input-group">
+                    <input type="email" class="form-control" placeholder="Email address" aria-label="Email">
+                    <button class="btn btn-premium" type="button">Subscribe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
