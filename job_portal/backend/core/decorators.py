@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 
-from users.services import get_profile_completion, get_user_profile
+from users.services import get_dashboard_route, get_profile_completion, get_user_profile
 
 
 def role_required(*allowed_roles):
@@ -18,7 +18,7 @@ def role_required(*allowed_roles):
                 return redirect("users:profile")
             if profile.role not in allowed_roles:
                 messages.error(request, "You are not authorized to access this page.")
-                return redirect("core:home")
+                return redirect(get_dashboard_route(profile))
             request.user_profile = profile
             return view_func(request, *args, **kwargs)
 

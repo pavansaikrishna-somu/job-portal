@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
@@ -44,7 +44,18 @@ def login_view(request):
             profile = get_user_profile(user.id)
             messages.success(request, "Logged in successfully.")
             return redirect(get_dashboard_route(profile))
-        messages.error(request, "Invalid email or password.")
+        
+        # Determine exact failure cause
+        UserModel = get_user_model()
+        user_exists = UserModel.objects.filter(email__iexact=email).first()
+        if not user_exists:
+            messages.error(request, "No account was found with that email address.")
+        elif not user_exists.check_password(password):
+            messages.error(request, "Incorrect password. Please try again.")
+        elif not user_exists.is_active:
+            messages.error(request, "Your email is not verified yet. Please check your email or navigate to /users/resend-verification/ to resend the verification link.")
+        else:
+            messages.error(request, "Invalid email or password.")
     return render(request, "users/login.html", {"form": form})
 
 
@@ -121,3 +132,4 @@ def profile_edit_view(request):
             "application_count": application_count,
         },
     )
+
