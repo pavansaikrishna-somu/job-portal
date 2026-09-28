@@ -13,25 +13,90 @@
         <div class="collapse navbar-collapse" id="portalNavbar">
             <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
                 <li class="nav-item"><a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'core:home' %}">Home</a></li>
-                <li class="nav-item"><a class="nav-link {% if request.path|slice:':6' == '/jobs/' %}active{% endif %}" href="{% url 'jobs:job_list' %}">Jobs</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.path|slice:':6' == '/jobs/' and not '/jobs/post/' in request.path and not '/jobs/manage/' in request.path %}active{% endif %}" href="{% url 'jobs:job_list' %}">Jobs</a></li>
                 <li class="nav-item"><a class="nav-link {% if request.path|slice:':7' == '/about/' %}active{% endif %}" href="{% url 'core:about' %}">About</a></li>
                 <li class="nav-item"><a class="nav-link {% if request.path|slice:':9' == '/contact/' %}active{% endif %}" href="{% url 'core:contact' %}">Contact</a></li>
 
                 {% if user.is_authenticated %}
-                    {% if current_user_profile and current_user_profile.role == 'recruiter' %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'core:recruiter_dashboard' %}">Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'jobs:post_job' %}">Post Job</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'jobs:manage_jobs' %}"></i>Manage Jobs</a></li>
+                    {% if current_user_profile %}
+                        {% if current_user_profile.role == 'recruiter' %}
+                            <li class="nav-item"><a class="nav-link {% if '/dashboard/recruiter/' in request.path %}active{% endif %}" href="{% url 'core:recruiter_dashboard' %}">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link {% if '/jobs/manage/' in request.path %}active{% endif %}" href="{% url 'jobs:manage_jobs' %}">Manage Jobs</a></li>
+                        {% else %}
+                            <li class="nav-item"><a class="nav-link {% if '/dashboard/jobseeker/' in request.path %}active{% endif %}" href="{% url 'core:jobseeker_dashboard' %}">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link {% if '/applications/' in request.path %}active{% endif %}" href="{% url 'applications:my_applications' %}">My Applications</a></li>
+                            <li class="nav-item"><a class="nav-link {% if '/ai/analyzer/' in request.path %}active{% endif %}" href="{% url 'ai:analyzer_page' %}">Resume Analyzer</a></li>
+                        {% endif %}
+                        
+                        <!-- Messages Icon -->
+                        <li class="nav-item">
+                            <a class="nav-link nav-icon-link {% if '/messages/' in request.path %}active{% endif %} d-flex align-items-center" href="{% url 'messages_box:inbox' %}" title="Messages">
+                                <i class="fa-solid fa-envelope"></i>
+                                <span class="ms-2 d-lg-none">Messages</span>
+                                <span id="nav-unread-badge" class="badge badge-overlay rounded-pill bg-danger" style="display: none;">0</span>
+                            </a>
+                        </li>
+                        
+                        <!-- Notifications Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link nav-icon-link dropdown-toggle d-flex align-items-center" href="#" id="navbarNotifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                                <i class="fa-solid fa-bell"></i>
+                                <span class="ms-2 d-lg-none">Notifications</span>
+                                <span id="nav-notif-badge" class="badge badge-overlay rounded-pill bg-danger" style="display: none;">0</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end p-2 shadow border-0 mt-2" aria-labelledby="navbarNotifDropdown" id="nav-notif-dropdown-list" style="width: 320px; max-height: 400px; overflow-y: auto; border-radius: 12px;">
+                                <li class="text-center py-2 text-muted small" id="nav-notif-empty-item">No new notifications.</li>
+                                <li class="dropdown-divider"></li>
+                                <li class="text-center"><a href="{% url 'notifications:list' %}" class="small text-primary text-decoration-none fw-bold">View All Notifications</a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- Profile Dropdown -->
+                        <li class="nav-item dropdown ms-lg-2">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="userNavbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if current_user_profile.profile_image %}
+                                    <img src="{{ MEDIA_URL }}{{ current_user_profile.profile_image }}" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover; border: 2px solid rgba(255, 255, 255, 0.4);">
+                                {% else %}
+                                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center bg-light text-primary fw-bold" style="width: 30px; height: 30px; font-size: 0.85rem;">
+                                        {{ current_user_profile.name|slice:":1"|upper }}
+                                    </div>
+                                {% endif %}
+                                <span class="d-none d-lg-inline text-white fw-semibold">{{ current_user_profile.name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-2" aria-labelledby="userNavbarDropdown" style="border-radius: 12px; min-width: 200px;">
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="fw-bold text-dark text-truncate" style="font-size: 0.9rem;">{{ current_user_profile.name }}</div>
+                                    <div class="text-muted text-truncate" style="font-size: 0.75rem;">{{ current_user_profile.email }}</div>
+                                    <span class="badge bg-secondary mt-1 text-capitalize" style="font-size: 0.65rem;">{{ current_user_profile.role }}</span>
+                                </li>
+                                <li><a class="dropdown-item py-2" href="{% url 'users:profile' %}" style="border-radius: 6px; font-size: 0.9rem; font-weight: 500;"><i class="fa-solid fa-user me-2 text-muted"></i>Profile</a></li>
+                                {% if current_user_profile.role == 'recruiter' %}
+                                    <li><a class="dropdown-item py-2" href="{% url 'core:recruiter_dashboard' %}" style="border-radius: 6px; font-size: 0.9rem; font-weight: 500;"><i class="fa-solid fa-chart-line me-2 text-muted"></i>Dashboard</a></li>
+                                {% elif current_user_profile.role == 'jobseeker' %}
+                                    <li><a class="dropdown-item py-2" href="{% url 'core:jobseeker_dashboard' %}" style="border-radius: 6px; font-size: 0.9rem; font-weight: 500;"><i class="fa-solid fa-chart-line me-2 text-muted"></i>Dashboard</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form action="{% url 'users:logout' %}" method="post" class="d-inline w-100">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item py-2 text-danger border-0 bg-transparent w-100 text-start" style="border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+                                            <i class="fa-solid fa-right-from-bracket me-2"></i>Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'core:jobseeker_dashboard' %}">Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'applications:my_applications' %}">My Applications</a></li>
+                        <!-- Onboarding Pending: Show only safe Logout -->
+                        <li class="nav-item">
+                            <form action="{% url 'users:logout' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-light btn-sm px-3 fw-semibold">
+                                    <i class="fa-solid fa-right-from-bracket me-1.5"></i>Logout
+                                </button>
+                            </form>
+                        </li>
                     {% endif %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'users:profile' %}">Profile</a></li>
-                    <li class="nav-item">
-                        <a class="btn nav-logout-btn btn-sm ms-lg-2" href="{% url 'users:logout' %}">
-                            <i class="fa-solid fa-right-from-bracket me-1"></i>Logout
-                        </a>
-                    </li>
                 {% else %}
                     <li class="nav-item"><a class="btn nav-login-btn btn-sm ms-lg-2" href="{% url 'users:login' %}">Login</a></li>
                     <li class="nav-item"><a class="btn nav-signup-btn btn-sm" href="{% url 'users:register' %}">Get Started</a></li>

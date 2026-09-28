@@ -6,5 +6,6 @@ backend/*/*/__pycache__/
 backend/media/profiles/*
 backend/media/resumes/*
 !backend/media/resumes/sample_resume.pdf
+backend/media/attachments/*
 backend/staticfiles/
 *.pyc

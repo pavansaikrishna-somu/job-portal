@@ -355,7 +355,6 @@ html {
     padding: 1.8rem 2.1rem 1.4rem;
     background: rgba(255, 255, 255, 0.92);
     --profile-avatar-size: 132px;
-    --profile-stats-width: 360px;
 }
 
 .profile-banner-bg {
@@ -369,7 +368,7 @@ html {
 .profile-banner-body {
     position: relative;
     display: grid;
-    grid-template-columns: var(--profile-avatar-size) minmax(0, 1fr) minmax(0, var(--profile-stats-width));
+    grid-template-columns: var(--profile-avatar-size) minmax(0, 1fr) auto;
     gap: 1.4rem;
     align-items: center;
     min-height: 150px;
@@ -432,47 +431,71 @@ html {
     gap: 0.45rem;
 }
 
-.profile-banner-stats {
-    display: grid;
-    gap: 0.7rem;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    width: 100%;
-    align-self: flex-start;
-    margin-top: -6px;
-}
-
-.banner-stat {
-    background: rgba(255, 255, 255, 0.75);
-    border: 1px solid var(--portal-border);
-    border-radius: 1rem;
-    padding: 0.7rem 0.9rem;
-    text-align: center;
-    min-height: 64px;
+.profile-banner-actions {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    align-self: flex-end;
+    margin-bottom: 0.25rem;
+}
+
+.btn-profile-primary {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
+    gap: 0.5rem;
+    height: 38px;
+    padding: 0 1.25rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #ffffff !important;
+    background: linear-gradient(125deg, var(--portal-primary), var(--portal-accent)) !important;
+    border: none !important;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(45, 91, 255, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none !important;
 }
 
-.banner-stat .stat-value {
-    display: block;
-    font-weight: 700;
-    font-size: 1rem;
-    color: var(--portal-secondary);
+.btn-profile-primary:hover,
+.btn-profile-primary:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(45, 91, 255, 0.3);
+    color: #ffffff !important;
 }
 
-.banner-stat .stat-label {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--portal-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
+.btn-profile-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 38px;
+    padding: 0 1.25rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--portal-secondary) !important;
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 8px;
+    transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+    text-decoration: none !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.btn-profile-secondary:hover,
+.btn-profile-secondary:focus {
+    transform: translateY(-2px);
+    background: #f8fafc !important;
+    border-color: #94a3b8 !important;
+    color: var(--portal-secondary) !important;
 }
 
 .profile-banner-progress {
     margin-top: 1.1rem;
     padding: 0 0.2rem;
     margin-left: calc(var(--profile-avatar-size) + 1.4rem);
-    margin-right: calc(var(--profile-stats-width) + 1.4rem);
+    margin-right: 0;
 }
 
 .profile-banner {
@@ -938,7 +961,7 @@ html {
 
 @media (max-width: 991.98px) {
     .profile-banner-body {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
         text-align: center;
     }
 
@@ -951,10 +974,10 @@ html {
         justify-content: center;
     }
 
-    .profile-banner-stats {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    .profile-banner-actions {
         justify-content: center;
         width: 100%;
+        margin-top: 0.5rem;
     }
 
     .profile-banner-progress {
@@ -974,6 +997,17 @@ html {
 
     .profile-banner-name {
         font-size: 1.45rem;
+    }
+
+    .profile-banner-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.65rem;
+    }
+
+    .btn-profile-primary,
+    .btn-profile-secondary {
+        width: 100%;
     }
 
     .profile-banner-progress {
@@ -1193,4 +1227,304 @@ html {
     .stat-card {
         padding: 1rem;
     }
+}
+
+/* Navbar & Page Header UI Polish (Phase 8 Step 1) */
+
+/* Navbar styling refinements */
+.navbar .nav-link {
+    font-size: 0.92rem;
+    font-weight: 500;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Adjust active bar styling */
+.navbar .nav-link.active {
+    color: #ffffff !important;
+}
+
+.navbar .nav-link.active::after {
+    left: 0.8rem !important;
+    right: 0.8rem !important;
+    bottom: -2px !important;
+    height: 3px !important;
+    background: linear-gradient(90deg, var(--portal-highlight), var(--portal-primary)) !important;
+}
+
+/* Hide active underline on dropdown toggles or links inside dropdowns */
+.dropdown-menu .dropdown-item.active::after,
+.navbar .dropdown-toggle::after {
+    display: none !important;
+}
+
+.dropdown-toggle.nav-link.active::after {
+    display: none !important;
+}
+
+/* For icon-only links like Messages and Notifications on desktop */
+@media (min-width: 992px) {
+    .nav-icon-link {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        padding: 0 !important;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin: 0 0.1rem;
+    }
+    
+    .nav-icon-link:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: #ffffff !important;
+    }
+
+    .nav-icon-link.active {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .nav-icon-link.active::after {
+        display: none !important; /* No line under icon links */
+    }
+    
+    .nav-icon-link .badge-overlay {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        transform: translate(15%, -15%);
+        font-size: 0.65rem !important;
+        padding: 0.25em 0.5em !important;
+        border: 2px solid var(--portal-secondary);
+    }
+}
+
+/* Page Header Component styling */
+.page-header {
+    background: var(--portal-card);
+    border: 1px solid var(--portal-border);
+    border-radius: 1rem;
+    padding: 1.5rem 1.8rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.page-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+.page-header-pretitle {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--portal-primary);
+    margin-bottom: 0.3rem;
+}
+
+.page-header-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--portal-secondary);
+    margin: 0;
+}
+
+.page-header-description {
+    font-size: 0.88rem;
+    color: var(--portal-muted);
+    margin: 0.25rem 0 0 0;
+    font-weight: 500;
+}
+
+.page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+    .page-header {
+        padding: 1.2rem;
+    }
+    .page-header-title {
+        font-size: 1.4rem;
+    }
+}
+
+/* Job Seeker Dashboard UI Polish (Phase 8 Step 2) */
+.seeker-stat-card {
+    background: var(--portal-card);
+    border: 1px solid var(--portal-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--portal-shadow);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    height: 100%;
+}
+
+.seeker-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.seeker-stat-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--portal-secondary);
+    line-height: 1.1;
+    margin-bottom: 0.2rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.seeker-stat-lbl {
+    font-size: 0.85rem;
+    color: var(--portal-muted);
+    font-weight: 600;
+    margin: 0;
+}
+
+.seeker-stat-icon-wrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.icon-blue {
+    background: rgba(45, 91, 255, 0.08);
+    color: var(--portal-primary);
+}
+
+.icon-amber {
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--portal-highlight);
+}
+
+.icon-green {
+    background: rgba(16, 185, 129, 0.08);
+    color: #10b981;
+}
+
+.icon-violet {
+    background: rgba(124, 58, 237, 0.08);
+    color: var(--portal-accent);
+}
+
+.dashboard-section-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--portal-secondary);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.seeker-sidebar-card {
+    background: var(--portal-card);
+    border: 1px solid var(--portal-border);
+    border-radius: 1.2rem;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--portal-shadow);
+}
+
+.seeker-profile-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--portal-primary), var(--portal-accent));
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 auto 1rem;
+    font-family: 'Poppins', sans-serif;
+    box-shadow: 0 8px 20px rgba(45, 91, 255, 0.2);
+}
+
+.seeker-interview-card {
+    border: 1px solid var(--portal-border);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    background: var(--portal-card);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
+
+.seeker-interview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--portal-shadow);
+}
+
+.seeker-empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: var(--portal-card);
+    border: 1px dashed var(--portal-border);
+    border-radius: 1rem;
+}
+
+.seeker-empty-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(148, 163, 184, 0.1);
+    color: var(--portal-muted);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+}
+
+/* Job Details Styling (Phase 8 Step 4) */
+@media (min-width: 992px) {
+    .sticky-sidebar {
+        position: sticky;
+        top: 90px; /* offset for sticky navbar */
+        z-index: 10;
+    }
+}
+
+.overview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--portal-border);
+}
+
+.overview-item:last-child {
+    border-bottom: none;
+}
+
+.overview-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--portal-muted);
+}
+
+.overview-value {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--portal-secondary);
 }

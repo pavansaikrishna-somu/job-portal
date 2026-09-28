@@ -1,85 +1,235 @@
 {% extends 'base.html' %}
 {% block title %}Register | CareerConnect{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="glass-card hover-lift p-4">
-                <h1 class="h3 mb-2">Create your CareerConnect account</h1>
-                <p class="text-muted mb-4">Join a premium hiring network built for modern careers.</p>
-                <form method="post" enctype="multipart/form-data" novalidate>
-                    {% csrf_token %}
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="text" name="name" class="form-control" placeholder="Full Name" value="{{ form.name.value|default:'' }}" required>
-                                <label>Full Name</label>
-                            </div>
-                            {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="email" name="email" class="form-control" placeholder="Email" value="{{ form.email.value|default:'' }}" required>
-                                <label>Email</label>
-                            </div>
-                            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="text" name="phone" class="form-control" placeholder="Phone" value="{{ form.phone.value|default:'' }}">
-                                <label>Phone</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <select name="role" class="form-select" id="roleSelect" required>
-                                <option value="">Select role</option>
-                                <option value="jobseeker" {% if form.role.value == 'jobseeker' %}selected{% endif %}>Job Seeker</option>
-                                <option value="recruiter" {% if form.role.value == 'recruiter' %}selected{% endif %}>Recruiter</option>
-                                </select>
-                                <label>Role</label>
-                            </div>
-                            {% if form.role.errors %}<div class="text-danger small mt-1">{{ form.role.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="password" name="password" class="form-control" placeholder="Password" required>
-                                <label>Password</label>
-                            </div>
-                            {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-floating">
-                                <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
-                                <label>Confirm Password</label>
-                            </div>
-                            {% if form.confirm_password.errors %}<div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-floating">
-                                <input type="text" name="skills" class="form-control" placeholder="Skills" value="{{ form.skills.value|default:'' }}">
-                                <label>Skills (Python, Django, React)</label>
-                            </div>
-                        </div>
-                        <div class="col-md-12" id="companyField">
-                            <div class="form-floating">
-                                <input type="text" name="company_name" class="form-control" placeholder="Company Name" value="{{ form.company_name.value|default:'' }}">
-                                <label>Company Name (Recruiters)</label>
-                            </div>
-                            {% if form.company_name.errors %}<div class="text-danger small mt-1">{{ form.company_name.errors.0 }}</div>{% endif %}
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Profile Image</label>
-                            <input type="file" name="profile_image" class="form-control" accept="image/*">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-premium mt-4">Create Account</button>
-                </form>
-                <p class="mt-3 mb-0 text-secondary">
-                    Already have an account? <a href="{% url 'users:login' %}">Login</a>
-                </p>
-            </div>
+<style>
+    body {
+        background-color: #f1f5f9 !important;
+    }
+    
+    .register-container {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .register-card {
+        max-width: 680px;
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        padding: 2.5rem;
+        margin-top: -3vh;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    
+    .btn-signin {
+        background-color: #2563eb;
+        border-color: #2563eb;
+        color: #ffffff;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-signin:hover:not(:disabled) {
+        background-color: #1d4ed8;
+        border-color: #1d4ed8;
+    }
+    
+    .btn-signin:focus {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4);
+    }
+    
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle-btn {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        height: 100%;
+        border: none;
+        background: transparent;
+        padding: 0 0.85rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .password-toggle-btn:focus {
+        outline: none;
+    }
+    
+    .btn-google {
+        border-color: #cbd5e1;
+        background-color: #ffffff;
+        color: #334155;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    
+    .btn-google:hover {
+        background-color: #f8fafc;
+        border-color: #94a3b8;
+    }
+</style>
+
+<div class="register-container">
+    <div class="register-card">
+        <!-- Title Welcome Header -->
+        <div class="text-center mb-4">
+            <h2 class="h4 fw-bold text-dark mb-1">Create your account</h2>
+            <p class="text-muted small">Join a premium hiring network built for modern careers.</p>
         </div>
+
+        <!-- Global Alert Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-danger{% endif %} alert-dismissible fade show p-2.5 small mb-3.5" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close p-2.5" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Form -->
+        <form method="post" id="register-form" novalidate>
+            {% csrf_token %}
+            
+            <div class="row g-3 mb-4">
+                <!-- Full Name -->
+                <div class="col-md-6">
+                    <label for="name-field" class="form-label small fw-semibold text-secondary mb-1.5">Full Name</label>
+                    <input type="text" name="name" id="name-field" class="form-control" placeholder="John Doe" value="{{ form.name.value|default:'' }}" required>
+                    {% if form.name.errors %}
+                        <div class="text-danger small mt-1.5">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Email -->
+                <div class="col-md-6">
+                    <label for="email-field" class="form-label small fw-semibold text-secondary mb-1.5">Email</label>
+                    <input type="email" name="email" id="email-field" class="form-control" placeholder="john@example.com" value="{{ form.email.value|default:'' }}" required>
+                    {% if form.email.errors %}
+                        <div class="text-danger small mt-1.5">{{ form.email.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Phone Number -->
+                <div class="col-md-6">
+                    <label for="phone-field" class="form-label small fw-semibold text-secondary mb-1.5">Phone Number</label>
+                    <input type="tel" name="phone" id="phone-field" class="form-control" placeholder="+1 (555) 019-2834" value="{{ form.phone.value|default:'' }}">
+                    {% if form.phone.errors %}
+                        <div class="text-danger small mt-1.5">{{ form.phone.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Role selection -->
+                <div class="col-md-6">
+                    <label for="role-field" class="form-label small fw-semibold text-secondary mb-1.5">Role</label>
+                    <select name="role" id="role-field" class="form-select" required>
+                        <option value="">Select your role</option>
+                        <option value="jobseeker" {% if form.role.value == 'jobseeker' %}selected{% endif %}>Job Seeker</option>
+                        <option value="recruiter" {% if form.role.value == 'recruiter' %}selected{% endif %}>Recruiter</option>
+                    </select>
+                    {% if form.role.errors %}
+                        <div class="text-danger small mt-1.5">{{ form.role.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Password -->
+                <div class="col-md-6">
+                    <label for="password-field" class="form-label small fw-semibold text-secondary mb-1.5">Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" name="password" id="password-field" class="form-control" placeholder="••••••••" required style="padding-right: 2.75rem;">
+                        <button type="button" class="password-toggle-btn" id="password-toggle" onclick="togglePasswordVisibility('password-field', 'eye-icon')" aria-label="Toggle password visibility">
+                            <i class="fa-solid fa-eye" id="eye-icon"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="text-danger small mt-1.5">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Confirm Password -->
+                <div class="col-md-6">
+                    <label for="confirm-password-field" class="form-label small fw-semibold text-secondary mb-1.5">Confirm Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" name="confirm_password" id="confirm-password-field" class="form-control" placeholder="••••••••" required style="padding-right: 2.75rem;">
+                        <button type="button" class="password-toggle-btn" id="confirm-password-toggle" onclick="togglePasswordVisibility('confirm-password-field', 'confirm-eye-icon')" aria-label="Toggle password visibility">
+                            <i class="fa-solid fa-eye" id="confirm-eye-icon"></i>
+                        </button>
+                    </div>
+                    {% if form.confirm_password.errors %}
+                        <div class="text-danger small mt-1.5">{{ form.confirm_password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Create Account button -->
+            <button type="submit" class="btn btn-signin w-100 fw-semibold py-2.5 mb-3" id="signup-btn">
+                <span class="spinner-border spinner-border-sm d-none me-2" id="signup-spinner" role="status" aria-hidden="true"></span>
+                Create account
+            </button>
+        </form>
+
+        <!-- Divider OR -->
+        <div class="d-flex align-items-center my-3.5">
+            <div class="flex-grow-1" style="height: 1px; background-color: #cbd5e1;"></div>
+            <span class="px-3 text-secondary small fw-medium">OR</span>
+            <div class="flex-grow-1" style="height: 1px; background-color: #cbd5e1;"></div>
+        </div>
+
+        <!-- Google Registration Button -->
+        <a href="{% url 'google_login' %}" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2 py-2 fw-medium mb-3">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.9c1.69-1.55 2.69-3.85 2.69-6.57z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.9-2.24c-.8.54-1.84.87-3.06.87-2.35 0-4.35-1.59-5.06-3.73H.96v2.3C2.44 15.93 5.47 18 9 18z"/>
+                <path fill="#FBBC05" d="M3.94 10.67c-.18-.54-.28-1.12-.28-1.67s.1-1.13.28-1.67V5.03H.96C.35 6.24 0 7.6 0 9s.35 2.76.96 3.97l2.98-2.3z"/>
+                <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.47.89 11.43 0 9 0 5.47 0 2.44 2.07.96 5.03l2.98 2.3c.71-2.14 2.71-3.75 5.06-3.75z"/>
+            </svg>
+            Continue with Google
+        </a>
+
+        <!-- Redirect to login link -->
+        <p class="text-center mt-3.5 mb-0 text-secondary small">
+            Already have an account? <a href="{% url 'users:login' %}" class="text-decoration-none text-primary fw-semibold">Sign in</a>
+        </p>
     </div>
 </div>
+
+<script>
+    // 1. Password Visibility Toggle helper
+    function togglePasswordVisibility(fieldId, iconId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(iconId);
+        
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.className = 'fa-solid fa-eye-slash';
+        } else {
+            field.type = 'password';
+            icon.className = 'fa-solid fa-eye';
+        }
+    }
+
+    // 2. Prevent Double Form Submission & Show Loader Spinner
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+        const btn = document.getElementById('signup-btn');
+        const spinner = document.getElementById('signup-spinner');
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+    });
+</script>
 {% endblock %}

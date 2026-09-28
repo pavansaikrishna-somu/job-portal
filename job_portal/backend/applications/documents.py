@@ -1,5 +1,5 @@
 from django.utils import timezone
-from mongoengine import DateTimeField, Document, IntField, StringField
+from mongoengine import DateTimeField, Document, IntField, StringField, ListField, DictField
 from mongoengine.errors import ValidationError
 
 
@@ -12,7 +12,8 @@ class Application(Document):
     recruiter_id = IntField(required=True)
     resume = StringField(required=True)
     cover_letter = StringField(required=True)
-    status = StringField(choices=("Pending", "Reviewed", "Shortlisted", "Rejected"), default="Pending")
+    status = StringField(choices=("Pending", "Reviewed", "Shortlisted", "Rejected", "Withdrawn", "Hired"), default="Pending")
+    status_history = ListField(DictField(), default=list)
     applied_at = DateTimeField(default=timezone.now)
 
     meta = {
@@ -26,3 +27,8 @@ class Application(Document):
             return cls.objects.get(id=application_id)
         except (cls.DoesNotExist, ValidationError):
             return None
+
+    @property
+    def active_interview(self):
+        from interviews.documents import Interview
+        return Interview.objects(application_id=str(self.id), status="Scheduled").first()

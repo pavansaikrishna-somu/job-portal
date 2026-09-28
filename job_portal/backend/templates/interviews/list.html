@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Interviews | CareerConnect{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="page-header mb-4">
+        <div class="page-header-row">
+            <div>
+                <span class="page-header-pretitle">Meetings</span>
+                <h1 class="page-header-title">Interviews</h1>
+                <p class="page-header-description">Manage and track your upcoming and completed interviews.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Interviews -->
+    <div class="glass-card p-4 mb-4 text-dark">
+        <h2 class="h5 mb-4 fw-bold text-dark"><i class="fa-regular fa-clock text-primary me-2"></i>Upcoming Interviews</h2>
+        <div class="row g-3">
+            {% for item in upcoming %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm border-0 h-100 hover-lift text-dark">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title fw-bold mb-0 text-truncate" style="max-width: 75%;">{{ item.interview.title }}</h5>
+                                    <span class="badge bg-success rounded-pill">Scheduled</span>
+                                </div>
+                                <h6 class="text-muted small mb-3"><i class="fa-solid fa-briefcase me-1"></i>{{ item.job_title }} at {{ item.company }}</h6>
+                                <p class="card-text mb-1 text-dark small">
+                                    <strong>{% if role == 'recruiter' %}Candidate:{% else %}Recruiter:{% endif %}</strong> {{ item.other_name }}
+                                </p>
+                                <p class="card-text mb-1 text-dark small">
+                                    <strong>Date:</strong> {{ item.interview.interview_date|date:"d M Y" }}
+                                </p>
+                                <p class="card-text mb-1 text-dark small">
+                                    <strong>Time:</strong> {{ item.interview.start_time }} ({{ item.interview.timezone }})
+                                </p>
+                                <p class="card-text mb-1 text-dark small">
+                                    <strong>Duration:</strong> {{ item.interview.duration }} minutes
+                                </p>
+                                <div class="mt-2 text-dark small fw-semibold">
+                                    <i class="fa-solid fa-clock text-primary me-1"></i>
+                                    <span class="interview-countdown" data-timestamp="{{ item.iso_date }}"></span>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                <a href="{% url 'interviews:view_interview' item.interview.id %}" class="btn btn-sm btn-outline-dark flex-grow-1">Details</a>
+                                
+                                {% if item.interview.meeting_provider == 'zoom' %}
+                                    {% if role == 'recruiter' %}
+                                        <a href="{{ item.interview.meeting_start_url }}" target="_blank" class="btn btn-sm btn-success flex-grow-1">Start Zoom</a>
+                                    {% else %}
+                                        <a href="{{ item.interview.meeting_url }}" target="_blank" class="btn btn-sm btn-primary flex-grow-1">Join Zoom</a>
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if role == 'recruiter' %}
+                                    <a href="{% url 'interviews:reschedule_interview' item.interview.id %}" class="btn btn-sm btn-outline-primary" title="Reschedule"><i class="fa-solid fa-calendar-alt"></i></a>
+                                    <a href="{% url 'interviews:update_status' item.interview.id 'Cancelled' %}" class="btn btn-sm btn-outline-danger" title="Cancel" onclick="return confirm('Are you sure you want to cancel this interview? This will delete the Zoom meeting and cannot be undone.');"><i class="fa-solid fa-trash"></i></a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 py-4 text-center text-muted">
+                    <i class="fa-regular fa-calendar-times fa-2x mb-2"></i>
+                    <p class="small mb-0">No upcoming interviews scheduled.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Past Interviews (History) -->
+    <div class="glass-card p-4 text-dark">
+        <h2 class="h5 mb-4 fw-bold text-dark"><i class="fa-solid fa-history text-secondary me-2"></i>Interview History</h2>
+        <div class="table-responsive">
+            <table class="table table-premium align-middle mb-0 text-dark">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Job Title</th>
+                        <th>{% if role == 'recruiter' %}Candidate{% else %}Recruiter{% endif %}</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in past %}
+                        <tr>
+                            <td>{{ item.interview.title }}</td>
+                            <td>{{ item.job_title }}</td>
+                            <td>{{ item.other_name }}</td>
+                            <td>{{ item.interview.interview_date|date:"d M Y" }} at {{ item.interview.start_time }}</td>
+                            <td>
+                                <span class="badge {% if item.interview.status == 'Completed' %}bg-secondary{% else %}bg-danger{% endif %}">
+                                    {{ item.interview.status }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'interviews:view_interview' item.interview.id %}" class="btn btn-sm btn-outline-secondary">View Details</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-3 text-muted">No past interviews found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        function updateCountdowns() {
+            document.querySelectorAll(".interview-countdown").forEach(function(el) {
+                const utcStr = el.getAttribute("data-timestamp");
+                if (!utcStr) return;
+                
+                const targetDate = new Date(utcStr);
+                const now = new Date();
+                const diffMs = targetDate - now;
+                
+                if (diffMs <= 0) {
+                    el.textContent = "In Progress";
+                    el.classList.add("text-success");
+                    return;
+                }
+                
+                const totalSecs = Math.floor(diffMs / 1000);
+                const totalMins = Math.floor(totalSecs / 60);
+                const totalHrs = Math.floor(totalMins / 60);
+                const days = Math.floor(totalHrs / 24);
+                
+                const remainingHrs = totalHrs % 24;
+                const remainingMins = totalMins % 60;
+                
+                if (days > 0) {
+                    el.textContent = "Starts in " + days + "d " + remainingHrs + "h";
+                } else if (remainingHrs > 0) {
+                    el.textContent = "Starts in " + remainingHrs + "h " + remainingMins + "m";
+                } else {
+                    el.textContent = "Starts in " + remainingMins + "m";
+                }
+            });
+        }
+        
+        updateCountdowns();
+        setInterval(updateCountdowns, 60000);
+    });
+</script>
+{% endblock %}

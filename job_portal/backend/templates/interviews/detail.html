@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+{% block title %}Interview Details | CareerConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    .meeting-card {
+        background: #f8fafc;
+        border: 1px solid var(--portal-border);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    @keyframes pulse-glow {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70% { transform: scale(1.02); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    
+    .pulse-glowing {
+        animation: pulse-glow 2.2s infinite;
+    }
+    
+    .btn-calendar {
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .masked-password {
+        font-family: monospace;
+        letter-spacing: 2px;
+        background: #f1f5f9;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-card p-4 p-lg-5 shadow text-dark">
+                <!-- Back Link -->
+                <div class="mb-4">
+                    <a href="{% url 'interviews:list_interviews' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Interviews
+                    </a>
+                </div>
+
+                <!-- Header -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 border-bottom pb-4 mb-4">
+                    <div>
+                        <h1 class="h3 mb-1 fw-bold text-dark">{{ interview.title }}</h1>
+                        <p class="text-muted mb-0">For: <strong class="text-primary">{{ job.title }}</strong> at {{ job.company }}</p>
+                        {% if interview.status == 'Scheduled' %}
+                            <div class="mt-2 text-dark small fw-semibold">
+                                <i class="fa-solid fa-hourglass-half text-primary me-1"></i>
+                                <span class="interview-countdown" data-timestamp="{{ interview_iso_date }}"></span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <span id="join-status-badge" class="badge px-3 py-2 fs-6 rounded-pill
+                            {% if interview.status == 'Scheduled' %}bg-success
+                            {% elif interview.status == 'Completed' %}bg-secondary
+                            {% else %}bg-danger{% endif %}">
+                            <span id="join-status-text">{{ join_time_status }}</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Content Grid -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-info-circle text-primary me-2"></i>Details</h5>
+                        <p class="mb-2 text-dark"><strong>{% if role == 'recruiter' %}Candidate:{% else %}Recruiter:{% endif %}</strong> {{ other_name }}</p>
+                        <p class="mb-2 text-dark"><strong>Date:</strong> {{ interview.interview_date|date:"d F Y" }}</p>
+                        <p class="mb-2 text-dark"><strong>Time:</strong> {{ interview.start_time }} ({{ interview.timezone }})</p>
+                        <p class="mb-2 text-dark"><strong>Duration:</strong> {{ interview.duration }} minutes</p>
+                        <p class="mb-2 text-dark"><strong>Platform:</strong> Zoom Video</p>
+                        
+                        {% if interview.meeting_id and interview.meeting_provider == 'zoom' %}
+                            <p class="mb-2 text-dark">
+                                <strong>Meeting ID:</strong> <code class="bg-light px-2 py-0.5 rounded">{{ interview.meeting_id }}</code>
+                            </p>
+                            <p class="mb-2 text-dark d-flex align-items-center gap-1.5">
+                                <strong>Password:</strong> 
+                                <span class="masked-password">••••••</span>
+                                <button class="btn btn-sm btn-light border py-0 px-2" onclick="copyPassword()" title="Copy password">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-video text-primary me-2"></i>Meeting Access</h5>
+                        <div class="meeting-card p-3 text-center">
+                            {% if interview.status == 'Scheduled' %}
+                                {% if interview.meeting_provider == 'zoom' %}
+                                    <div class="text-success"><i class="fa-solid fa-video fa-2x mb-2 text-success"></i></div>
+                                    <p class="small text-muted mb-3">
+                                        {% if role == 'recruiter' %}
+                                            Start link is ready. Use host controls to begin session.
+                                        {% else %}
+                                            Join link is ready. Candidate entry is active 10 minutes prior.
+                                        {% endif %}
+                                    </p>
+                                    
+                                    <div id="meeting-action-buttons">
+                                        {% if role == 'recruiter' %}
+                                            <a href="{{ meeting_access_url }}" target="_blank" class="btn btn-success btn-sm w-100 mb-2">
+                                                <i class="fa-solid fa-play me-1.5"></i>Start Zoom Meeting
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ meeting_access_url }}" target="_blank" class="btn btn-primary btn-sm w-100 mb-2">
+                                                <i class="fa-solid fa-right-to-bracket me-1.5"></i>Join Zoom Meeting
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                {% elif interview.meeting_provider == 'failed' %}
+                                    <div class="text-danger"><i class="fa-solid fa-triangle-exclamation fa-2x mb-2 text-danger"></i></div>
+                                    <p class="small text-danger mb-1">Zoom meeting creation failed.</p>
+                                    {% if role == 'recruiter' %}
+                                        <form action="{% url 'interviews:retry_zoom' interview.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-warning btn-sm w-100 mt-1">Retry Zoom Meeting</button>
+                                        </form>
+                                    {% else %}
+                                        <p class="small text-muted mb-0">Online meeting link is not configured yet.</p>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="text-muted"><i class="fa-solid fa-link-slash fa-2x mb-2 text-secondary"></i></div>
+                                    {% if role == 'recruiter' and is_zoom_configured %}
+                                        <p class="small text-muted mb-1">Zoom is configured but meeting not created.</p>
+                                        <form action="{% url 'interviews:retry_zoom' interview.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-primary btn-sm w-100 mt-1">Generate Zoom Link</button>
+                                        </form>
+                                    {% elif role == 'recruiter' %}
+                                        <p class="small text-muted mb-0">Zoom integration is not configured.</p>
+                                    {% else %}
+                                        <p class="small text-muted mb-0">Online meeting link is not configured yet.</p>
+                                    {% endif %}
+                                {% endif %}
+                            {% elif interview.status == 'Cancelled' %}
+                                <div class="text-muted"><i class="fa-solid fa-circle-xmark fa-2x mb-2 text-danger"></i></div>
+                                <p class="small text-danger mb-0">This interview has been cancelled.</p>
+                            {% else %}
+                                <div class="text-muted"><i class="fa-solid fa-circle-check fa-2x mb-2 text-success"></i></div>
+                                <p class="small text-success mb-0">This interview has been marked as Completed.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar and Invite Section -->
+                {% if interview.status == 'Scheduled' %}
+                    <div class="border-top pt-4 mb-4">
+                        <h5 class="fw-bold text-dark mb-3"><i class="fa-regular fa-calendar-check text-primary me-2"></i>Calendar & Invites</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <!-- Copy Invitation Buttons -->
+                            {% if role == 'recruiter' %}
+                                <button class="btn btn-sm btn-outline-primary btn-calendar" onclick="copyToClipboard('host-invite-text', this)">
+                                    <i class="fa-solid fa-copy"></i> Copy Host Invite
+                                </button>
+                                <button class="btn btn-sm btn-outline-dark btn-calendar" onclick="copyToClipboard('candidate-invite-text', this)">
+                                    <i class="fa-solid fa-envelope-open-text"></i> Copy Candidate Invite
+                                </button>
+                            {% else %}
+                                <button class="btn btn-sm btn-outline-primary btn-calendar" onclick="copyToClipboard('candidate-invite-text', this)">
+                                    <i class="fa-solid fa-copy"></i> Copy Invitation
+                                </button>
+                            {% endif %}
+                            
+                            <!-- Google Calendar Link -->
+                            <a href="{{ google_calendar_url }}" target="_blank" class="btn btn-sm btn-outline-danger btn-calendar">
+                                <i class="fa-brands fa-google"></i> Google Calendar
+                            </a>
+                            
+                            <!-- ICS Download -->
+                            <a href="{% url 'interviews:export_ics' interview.id %}" class="btn btn-sm btn-outline-secondary btn-calendar">
+                                <i class="fa-solid fa-download"></i> Download Calendar Invite (.ics)
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Notes -->
+                {% if interview.notes %}
+                    <div class="border-top pt-4 mb-4">
+                        <h5 class="fw-bold text-dark mb-3"><i class="fa-regular fa-file-text text-primary me-2"></i>Notes</h5>
+                        <div class="p-3 bg-light rounded text-dark small" style="white-space: pre-line;">{{ interview.notes }}</div>
+                    </div>
+                {% endif %}
+
+                <!-- Actions -->
+                {% if role == 'recruiter' and interview.status == 'Scheduled' %}
+                    <div class="d-flex justify-content-end gap-2 border-top pt-4">
+                        <a href="{% url 'interviews:update_status' interview.id 'Completed' %}" class="btn btn-success px-4">Mark Completed</a>
+                        <a href="{% url 'interviews:reschedule_interview' interview.id %}" class="btn btn-primary px-4">Reschedule</a>
+                        <a href="{% url 'interviews:update_status' interview.id 'Cancelled' %}" class="btn btn-danger px-4" onclick="return confirm('Are you sure you want to cancel this interview? This will delete the Zoom meeting and cannot be undone.');">Cancel Interview</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Raw formatted invitation text blocks for clipboard copy -->
+<div id="candidate-invite-text" class="d-none">
+Interview: {{ interview.title }}
+Position: {{ job.title }}
+Company: {{ job.company }}
+Date: {{ interview.interview_date|date:"d F Y" }}
+Time: {{ interview.start_time }} ({{ interview.timezone }})
+Duration: {{ interview.duration }} minutes
+Meeting Link: {{ interview.meeting_url }}
+</div>
+
+{% if role == 'recruiter' %}
+<div id="host-invite-text" class="d-none">
+Interview: {{ interview.title }}
+Position: {{ job.title }}
+Company: {{ job.company }}
+Date: {{ interview.interview_date|date:"d F Y" }}
+Time: {{ interview.start_time }} ({{ interview.timezone }})
+Duration: {{ interview.duration }} minutes
+Meeting Link: {{ interview.meeting_start_url }}
+</div>
+{% endif %}
+
+<script>
+    // 1. Password Copy Helper
+    function copyPassword() {
+        const pswStr = "CcPass321"; // Simulated password associated with Mock Zoom config
+        navigator.clipboard.writeText(pswStr).then(() => {
+            alert("Password copied to clipboard!");
+        });
+    }
+
+    // 2. Clipboard API Invitation Copy Helper
+    function copyToClipboard(elementId, buttonEl) {
+        const textEl = document.getElementById(elementId);
+        if (!textEl) return;
+        const text = textEl.innerText.trim();
+        
+        function showConfirmation() {
+            const originalHtml = buttonEl.innerHTML;
+            buttonEl.innerHTML = '<i class="fa-solid fa-check text-success"></i> Copied!';
+            buttonEl.classList.add('btn-success');
+            buttonEl.classList.remove('btn-outline-primary', 'btn-outline-dark');
+            setTimeout(() => {
+                buttonEl.innerHTML = originalHtml;
+                buttonEl.classList.remove('btn-success');
+                if (elementId === 'host-invite-text') {
+                    buttonEl.classList.add('btn-outline-primary');
+                } else {
+                    buttonEl.classList.add('btn-outline-dark');
+                }
+            }, 2000);
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(showConfirmation).catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+        
+        function fallbackCopy(val) {
+            const textarea = document.createElement("textarea");
+            textarea.value = val;
+            textarea.style.position = "fixed";
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand("copy");
+                showConfirmation();
+            } catch (err) {
+                console.error("Fallback copy failed", err);
+            }
+            document.body.removeChild(textarea);
+        }
+    }
+
+    // 3. Dynamic Join-Time Status updater
+    document.addEventListener("DOMContentLoaded", function() {
+        const startStr = "{{ interview_iso_date }}";
+        const windowStr = "{{ join_window_start_iso }}";
+        const endStr = "{{ end_date_iso }}";
+        const dbStatus = "{{ interview.status }}";
+        
+        const statusTextEl = document.getElementById("join-status-text");
+        const statusBadgeEl = document.getElementById("join-status-badge");
+        const actionButtonsContainer = document.getElementById("meeting-action-buttons");
+        
+        function updateStatus() {
+            if (dbStatus === "Cancelled" || dbStatus === "Completed") {
+                return; // Server status is final
+            }
+            
+            const now = new Date();
+            const start = new Date(startStr);
+            const joinWindow = new Date(windowStr);
+            const end = new Date(endStr);
+            
+            let status = "Upcoming";
+            let badgeClass = "bg-secondary";
+            let isPulsing = false;
+            
+            if (now < joinWindow) {
+                status = "Upcoming";
+                badgeClass = "bg-secondary";
+            } else if (now >= joinWindow && now < start) {
+                status = "Ready to Join";
+                badgeClass = "bg-success";
+                isPulsing = true;
+            } else if (now >= start && now < end) {
+                status = "In Progress";
+                badgeClass = "bg-primary";
+                isPulsing = true;
+            } else {
+                status = "In Progress";
+                badgeClass = "bg-info";
+            }
+            
+            if (statusTextEl) statusTextEl.textContent = status;
+            if (statusBadgeEl) {
+                statusBadgeEl.className = `badge px-3 py-2 fs-6 rounded-pill ${badgeClass}` + (isPulsing ? " pulse-glowing" : "");
+            }
+        }
+        
+        updateStatus();
+        setInterval(updateStatus, 5000);
+        
+        // 4. Time Countdowns
+        function updateCountdowns() {
+            document.querySelectorAll(".interview-countdown").forEach(function(el) {
+                const utcStr = el.getAttribute("data-timestamp");
+                if (!utcStr) return;
+                
+                const targetDate = new Date(utcStr);
+                const now = new Date();
+                const diffMs = targetDate - now;
+                
+                if (diffMs <= 0) {
+                    el.textContent = "In Progress";
+                    el.classList.add("text-success");
+                    return;
+                }
+                
+                const totalSecs = Math.floor(diffMs / 1000);
+                const totalMins = Math.floor(totalSecs / 60);
+                const totalHrs = Math.floor(totalMins / 60);
+                const days = Math.floor(totalHrs / 24);
+                
+                const remainingHrs = totalHrs % 24;
+                const remainingMins = totalMins % 60;
+                
+                if (days > 0) {
+                    el.textContent = "Starts in " + days + "d " + remainingHrs + "h";
+                } else if (remainingHrs > 0) {
+                    el.textContent = "Starts in " + remainingHrs + "h " + remainingMins + "m";
+                } else {
+                    el.textContent = "Starts in " + remainingMins + "m";
+                }
+            });
+        }
+        
+        updateCountdowns();
+        setInterval(updateCountdowns, 60000);
+    });
+</script>
+{% endblock %}

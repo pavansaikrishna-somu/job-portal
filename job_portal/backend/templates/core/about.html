@@ -1,39 +1,243 @@
 {% extends 'base.html' %}
 {% block title %}About | CareerConnect{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-9">
-            <div class="glass-card hover-lift p-4">
-                <h1 class="h2 mb-3">About CareerConnect</h1>
-                <p class="text-secondary">
-                    This platform helps job seekers discover opportunities and enables recruiters to manage job posts and applications efficiently.
+<div class="container py-5 fade-in">
+    <!-- Hero Section -->
+    <div class="row justify-content-center mb-5 text-center">
+        <div class="col-lg-10">
+            <div class="p-5 rounded-4 border bg-white shadow-sm" style="background: radial-gradient(circle at top right, rgba(45, 91, 255, 0.05), transparent 60%);">
+                <span class="badge px-3 py-2 rounded-pill mb-3 fw-semibold" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; font-size: 0.8rem; letter-spacing: 0.5px;">ABOUT US</span>
+                <h1 class="display-6 fw-bold text-dark mb-3">Connecting Talent With the Right Opportunities</h1>
+                <p class="lead text-secondary mx-auto mb-4" style="max-width: 780px; font-size: 1.1rem; line-height: 1.6;">
+                    CareerConnect is a modern job portal designed to bring job seekers and recruiters together through a simple, efficient and professional hiring experience.
                 </p>
-                <div class="row g-3 mt-2">
-                    <div class="col-md-6">
-                        <div class="feature-box">
-                            <h5><i class="fa-solid fa-user-check text-primary me-2"></i>Role-Based Access</h5>
-                            <p class="mb-0">Separate dashboards and workflows for job seekers and recruiters.</p>
+                
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    {% if user.is_authenticated %}
+                        {% if current_user_profile and current_user_profile.role == 'recruiter' %}
+                            <a href="{% url 'jobs:post_job' %}" class="btn btn-primary px-4 py-2.5 fw-semibold rounded-3 hover-lift"><i class="fa-solid fa-plus-circle me-2"></i>Post a Job</a>
+                        {% else %}
+                            <a href="{% url 'jobs:job_list' %}" class="btn btn-primary px-4 py-2.5 fw-semibold rounded-3 hover-lift"><i class="fa-solid fa-magnifying-glass me-2"></i>Explore Jobs</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'jobs:job_list' %}" class="btn btn-primary px-4 py-2.5 fw-semibold rounded-3 hover-lift"><i class="fa-solid fa-magnifying-glass me-2"></i>Explore Jobs</a>
+                        <a href="{% url 'jobs:post_job' %}" class="btn btn-outline-primary px-4 py-2.5 fw-semibold rounded-3 hover-lift"><i class="fa-solid fa-plus-circle me-2"></i>Post a Job</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What is CareerConnect Section -->
+    <div class="row align-items-center mb-5 py-3">
+        <div class="col-md-6 mb-4 mb-md-0">
+            <h2 class="fw-bold text-dark mb-4">What is CareerConnect?</h2>
+            <p class="text-secondary mb-3" style="font-size: 1.05rem; line-height: 1.6;">
+                CareerConnect is a professional web-based platform tailored to bridge the gap between talented professionals and hiring companies. We facilitate a seamless interaction, removing friction from the job search and hiring lifecycle.
+            </p>
+            <p class="text-secondary" style="font-size: 1.05rem; line-height: 1.6;">
+                Whether you are seeking your next career leap or expanding your team with top talent, our platform streamlines the entire journey from initial discovery to active communication.
+            </p>
+        </div>
+        <div class="col-md-6">
+            <div class="card border rounded-4 shadow-sm p-4 bg-white">
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 36px; height: 36px; border-radius: 8px;">
+                            <i class="fa-solid fa-check" style="font-size: 0.9rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">For Job Seekers</h6>
+                            <p class="text-secondary mb-0 small">Discover relevant opportunities, upload your resume, and submit & manage job applications in one central space.</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="feature-box">
-                            <h5><i class="fa-solid fa-file-arrow-up text-primary me-2"></i>Resume Uploads</h5>
-                            <p class="mb-0">Applicants can apply online and upload resumes in PDF/DOC/DOCX format.</p>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 36px; height: 36px; border-radius: 8px;">
+                            <i class="fa-solid fa-check" style="font-size: 0.9rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">For Recruiters</h6>
+                            <p class="text-secondary mb-0 small">Publish job openings, review received applications, and track candidates with role-based recruitment tools.</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="feature-box">
-                            <h5><i class="fa-solid fa-database text-primary me-2"></i>MongoDB Atlas</h5>
-                            <p class="mb-0">Portal data is stored in cloud-hosted MongoDB for scalable data access.</p>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 36px; height: 36px; border-radius: 8px;">
+                            <i class="fa-solid fa-check" style="font-size: 0.9rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Collaborative Ecosystem</h6>
+                            <p class="text-secondary mb-0 small">Communicate directly and view dynamic dashboard insights to stay informed on hiring and career activity.</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="feature-box">
-                            <h5><i class="fa-solid fa-chart-line text-primary me-2"></i>Insightful Dashboards</h5>
-                            <p class="mb-0">Visual charts and statistics for tracking jobs, applications, and statuses.</p>
-                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Platform Highlights Section -->
+    <div class="mb-5 py-3">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-dark">Everything You Need to Connect and Hire</h2>
+            <p class="text-secondary mx-auto" style="max-width: 600px;">Explore the key tools designed to streamline matching the right candidate with the perfect role.</p>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            <!-- Card 1 -->
+            <div class="col">
+                <div class="card h-100 border rounded-4 bg-white p-4 shadow-sm hover-lift">
+                    <div class="icon-pill mb-3" style="width: 48px; height: 48px; border-radius: 12px; background-color: rgba(45, 91, 255, 0.08); color: #2d5bff;">
+                        <i class="fa-solid fa-magnifying-glass" style="font-size: 1.2rem;"></i>
                     </div>
+                    <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem;">Smart Job Discovery</h5>
+                    <p class="text-secondary mb-0 small" style="line-height: 1.5;">Discover job opportunities based on skills, roles and career interests.</p>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="col">
+                <div class="card h-100 border rounded-4 bg-white p-4 shadow-sm hover-lift">
+                    <div class="icon-pill mb-3" style="width: 48px; height: 48px; border-radius: 12px; background-color: rgba(45, 91, 255, 0.08); color: #2d5bff;">
+                        <i class="fa-solid fa-file-invoice" style="font-size: 1.2rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem;">Resume & Applications</h5>
+                    <p class="text-secondary mb-0 small" style="line-height: 1.5;">Upload resumes, apply for jobs and keep track of application progress.</p>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="col">
+                <div class="card h-100 border rounded-4 bg-white p-4 shadow-sm hover-lift">
+                    <div class="icon-pill mb-3" style="width: 48px; height: 48px; border-radius: 12px; background-color: rgba(45, 91, 255, 0.08); color: #2d5bff;">
+                        <i class="fa-solid fa-user-tie" style="font-size: 1.2rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem;">Recruiter Hiring</h5>
+                    <p class="text-secondary mb-0 small" style="line-height: 1.5;">Post openings, review applicants and manage recruitment efficiently.</p>
+                </div>
+            </div>
+            <!-- Card 4 -->
+            <div class="col">
+                <div class="card h-100 border rounded-4 bg-white p-4 shadow-sm hover-lift">
+                    <div class="icon-pill mb-3" style="width: 48px; height: 48px; border-radius: 12px; background-color: rgba(45, 91, 255, 0.08); color: #2d5bff;">
+                        <i class="fa-solid fa-chart-line" style="font-size: 1.2rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem;">Career Insights</h5>
+                    <p class="text-secondary mb-0 small" style="line-height: 1.5;">Use dashboards and application insights to understand hiring and career activity.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="mb-5 py-3">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-dark">How CareerConnect Works</h2>
+            <p class="text-secondary mx-auto" style="max-width: 600px;">A streamlined process designed to take you from sign-up to onboarding in four simple steps.</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Step 1 -->
+            <div class="col-md-3 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white fw-bold rounded-circle mb-3 shadow-sm" style="width: 48px; height: 48px; font-size: 1.2rem;">1</div>
+                <h5 class="fw-bold text-dark mb-2">Create Your Profile</h5>
+                <p class="text-secondary small px-2">Build your professional profile and provide the required information.</p>
+            </div>
+            <!-- Step 2 -->
+            <div class="col-md-3 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white fw-bold rounded-circle mb-3 shadow-sm" style="width: 48px; height: 48px; font-size: 1.2rem;">2</div>
+                <h5 class="fw-bold text-dark mb-2">Discover or Post Jobs</h5>
+                <p class="text-secondary small px-2">Jobseekers explore opportunities while recruiters publish openings.</p>
+            </div>
+            <!-- Step 3 -->
+            <div class="col-md-3 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white fw-bold rounded-circle mb-3 shadow-sm" style="width: 48px; height: 48px; font-size: 1.2rem;">3</div>
+                <h5 class="fw-bold text-dark mb-2">Apply or Review</h5>
+                <p class="text-secondary small px-2">Jobseekers submit applications and recruiters review suitable candidates.</p>
+            </div>
+            <!-- Step 4 -->
+            <div class="col-md-3 text-center">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white fw-bold rounded-circle mb-3 shadow-sm" style="width: 48px; height: 48px; font-size: 1.2rem;">4</div>
+                <h5 class="fw-bold text-dark mb-2">Connect & Hire</h5>
+                <p class="text-secondary small px-2">Communicate, evaluate opportunities and move toward successful hiring.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Why Choose CareerConnect Section -->
+    <div class="mb-5 py-3">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-dark">Why Choose CareerConnect?</h2>
+            <p class="text-secondary mx-auto" style="max-width: 600px;">We focus on creating a reliable, functional, and organized environment for your professional matches.</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Point 1 -->
+            <div class="col-md-6">
+                <div class="d-flex gap-3 p-3 bg-white rounded-3 border shadow-sm h-100">
+                    <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 44px; height: 44px; border-radius: 10px;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem;">Simple Experience</h5>
+                        <p class="text-secondary small mb-0" style="line-height: 1.5;">A straightforward platform designed to reduce unnecessary complexity.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Point 2 -->
+            <div class="col-md-6">
+                <div class="d-flex gap-3 p-3 bg-white rounded-3 border shadow-sm h-100">
+                    <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 44px; height: 44px; border-radius: 10px;">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem;">Role-Based Platform</h5>
+                        <p class="text-secondary small mb-0" style="line-height: 1.5;">Dedicated experiences for job seekers and recruiters.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Point 3 -->
+            <div class="col-md-6">
+                <div class="d-flex gap-3 p-3 bg-white rounded-3 border shadow-sm h-100">
+                    <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 44px; height: 44px; border-radius: 10px;">
+                        <i class="fa-solid fa-folder-tree"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem;">Centralized Workflow</h5>
+                        <p class="text-secondary small mb-0" style="line-height: 1.5;">Jobs, applications, resumes and recruitment activity in one place.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Point 4 -->
+            <div class="col-md-6">
+                <div class="d-flex gap-3 p-3 bg-white rounded-3 border shadow-sm h-100">
+                    <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 44px; height: 44px; border-radius: 10px;">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-2" style="font-size: 1.1rem;">Professional Communication</h5>
+                        <p class="text-secondary small mb-0" style="line-height: 1.5;">A platform that helps candidates and recruiters stay connected.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final CTA Section -->
+    <div class="row justify-content-center py-4">
+        <div class="col-lg-10">
+            <div class="p-5 rounded-4 text-center text-white" style="background: linear-gradient(135deg, #0b1220 0%, #1e293b 100%); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <h2 class="fw-bold mb-3">Your Next Opportunity Starts Here</h2>
+                <p class="text-white-50 mx-auto mb-4" style="max-width: 680px; font-size: 1.05rem;">
+                    Whether you're looking for your next career opportunity or searching for the right talent, CareerConnect helps make the connection simpler.
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    {% if user.is_authenticated %}
+                        {% if current_user_profile and current_user_profile.role == 'recruiter' %}
+                            <a href="{% url 'jobs:post_job' %}" class="btn btn-primary px-4 py-2.5 fw-semibold rounded-3 hover-lift"><i class="fa-solid fa-plus-circle me-2"></i>Post a Job</a>
+                        {% else %}
+                            <a href="{% url 'jobs:job_list' %}" class="btn btn-primary px-4 py-2.5 fw-semibold rounded-3 hover-lift"><i class="fa-solid fa-magnifying-glass me-2"></i>Explore Jobs</a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'jobs:job_list' %}" class="btn btn-primary px-4 py-2.5 fw-semibold rounded-3 hover-lift"><i class="fa-solid fa-magnifying-glass me-2"></i>Explore Jobs</a>
+                        <a href="{% url 'jobs:post_job' %}" class="btn btn-outline-light px-4 py-2.5 fw-semibold rounded-3 hover-lift"><i class="fa-solid fa-plus-circle me-2"></i>Post a Job</a>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Notifications | CareerConnect{% endblock %}
+{% block content %}
+<div class="container py-5 text-dark">
+    <div class="page-header mb-4">
+        <div class="page-header-row">
+            <div>
+                <span class="page-header-pretitle">Updates</span>
+                <h1 class="page-header-title">Notifications Center</h1>
+                <p class="page-header-description">Stay updated on your job applications, interviews, and messages.</p>
+            </div>
+            {% if unread_count > 0 %}
+                <div class="page-header-actions">
+                    <form action="{% url 'notifications:read_all' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-check-double me-1"></i>Mark all as read</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="glass-card p-4 text-dark">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0 fw-bold"><i class="fa-regular fa-bell text-primary me-2"></i>Notifications ({{ unread_count }} unread)</h2>
+        </div>
+
+        <div class="list-group list-group-flush">
+            {% for n in notifications %}
+                <div class="list-group-item px-3 py-3 border-bottom d-flex justify-content-between align-items-start gap-3 {% if not n.is_read %}bg-light{% endif %}" style="transition: background-color 0.2s;">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="mt-1">
+                            <span class="icon-pill btn-premium text-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; border-radius: 50%;">
+                                {% if n.notification_type == 'application_new' %}
+                                    <i class="fa-solid fa-file-signature"></i>
+                                {% elif n.notification_type == 'application_shortlisted' %}
+                                    <i class="fa-solid fa-award"></i>
+                                {% elif n.notification_type == 'application_status' %}
+                                    <i class="fa-solid fa-circle-info"></i>
+                                {% elif n.notification_type == 'interview_scheduled' or n.notification_type == 'interview_rescheduled' %}
+                                    <i class="fa-solid fa-calendar-check"></i>
+                                {% elif n.notification_type == 'interview_cancelled' %}
+                                    <i class="fa-solid fa-calendar-xmark text-danger"></i>
+                                {% elif n.notification_type == 'message_new' %}
+                                    <i class="fa-solid fa-envelope"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-bell"></i>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <h5 class="mb-0 fs-6 fw-bold {% if not n.is_read %}text-dark{% else %}text-secondary{% endif %}">{{ n.title }}</h5>
+                                {% if not n.is_read %}
+                                    <span class="badge bg-primary rounded-pill small" style="font-size: 0.7rem;">New</span>
+                                {% endif %}
+                            </div>
+                            <p class="mb-1 small text-muted mt-1">{{ n.description }}</p>
+                            <span class="text-muted small" style="font-size: 0.8rem;"><i class="fa-regular fa-clock me-1"></i>{{ n.time_ago }}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{% url 'notifications:read_and_redirect' n.id %}" class="btn btn-sm btn-outline-primary px-3">View</a>
+                        {% if not n.is_read %}
+                            <form action="{% url 'notifications:read' n.id %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Mark as read"><i class="fa-solid fa-check"></i></button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% empty %}
+                <div class="py-5 text-center text-muted">
+                    <i class="fa-regular fa-bell-slash fa-3x mb-3 text-secondary"></i>
+                    <p class="mb-0">You have no notifications yet.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4 d-flex justify-content-center">
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link text-primary" href="?page=1">&laquo; First</a></li>
+                        <li class="page-item"><a class="page-link text-primary" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item disabled"><span class="page-link text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link text-primary" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                        <li class="page-item"><a class="page-link text-primary" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -5,3 +5,9 @@ python-decouple==3.8
 mongoengine==0.29.1
 pymongo==4.10.1
 dnspython==2.7.0
+python-dotenv==1.2.2
+google-genai==2.17.0
+pypdf==6.15.0
+Pillow==12.3.0
+django-allauth==65.7.0
+requests==2.34.2

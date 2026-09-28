@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Messages | CareerConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    .conv-list-card {
+        height: 600px;
+        background: #ffffff;
+        border: 1px solid var(--portal-border);
+        border-radius: 1rem;
+        box-shadow: var(--portal-shadow);
+        overflow: hidden;
+    }
+    .conv-item {
+        border-bottom: 1px solid var(--portal-border);
+        transition: background-color 0.2s ease, border-left-color 0.2s ease;
+        text-decoration: none !important;
+        display: block;
+    }
+    .conv-item:last-child {
+        border-bottom: none;
+    }
+    .conv-item:hover {
+        background-color: #f8fafc;
+    }
+    .conv-item.active-conv {
+        background-color: rgba(45, 91, 255, 0.05);
+        border-left: 4px solid var(--portal-primary) !important;
+    }
+    .conv-item.unread-conv {
+        background-color: rgba(124, 58, 237, 0.02);
+    }
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(45, 91, 255, 0.08);
+        color: var(--portal-primary);
+        font-weight: 700;
+        font-size: 0.95rem;
+        border: 1px solid var(--portal-border);
+    }
+    .message-badge {
+        font-size: 0.65rem;
+        padding: 0.25em 0.55em;
+        border-radius: 999px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+    <!-- Header -->
+    <div class="page-header mb-4">
+        <div class="page-header-row">
+            <div>
+                <span class="page-header-pretitle">Inbox</span>
+                <h1 class="page-header-title">Messages</h1>
+                <p class="page-header-description">Communicate with recruiters and candidates.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two-Panel Grid -->
+    <div class="row g-4">
+        <!-- Left Panel: Conversations List -->
+        <div class="col-12 col-md-5 col-lg-4">
+            <div class="conv-list-card d-flex flex-column">
+                <div class="p-3 border-bottom bg-light">
+                    <h5 class="fw-bold mb-2 text-dark" style="font-size: 1rem;"><i class="fa-solid fa-comments me-2 text-primary"></i>Conversations</h5>
+                    <div class="input-group input-group-sm mt-2">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="searchConversations" class="form-control border-start-0 ps-0" placeholder="Search conversations...">
+                    </div>
+                </div>
+                <div class="flex-grow-1 overflow-y-auto" style="height: calc(600px - 90px);">
+                    {% for item in inbox_items %}
+                        <a href="{% url 'messages_box:chat_window' item.conversation.id %}" class="conv-item p-3 {% if item.unread_count > 0 %}unread-conv{% endif %}" data-name="{{ item.other_name }}" data-title="{{ item.conversation.job_title }}">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="avatar-circle flex-shrink-0">
+                                    {{ item.other_name|slice:":1"|upper }}
+                                </div>
+                                <div class="flex-grow-1 min-width-0">
+                                    <div class="d-flex justify-content-between align-items-baseline">
+                                        <h6 class="fw-bold mb-0 text-dark text-truncate" style="font-size: 0.88rem;">{{ item.other_name }}</h6>
+                                        <span class="text-muted small flex-shrink-0" style="font-size: 0.7rem;">{{ item.timestamp|date:"h:i A" }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <span class="badge text-capitalize" style="font-size: 0.65rem; background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; font-weight: 500;">
+                                            {{ item.other_role|default:"User" }}
+                                        </span>
+                                        {% if item.unread_count > 0 %}
+                                            <span class="badge bg-danger message-badge">{{ item.unread_count }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-secondary small" style="padding-left: 48px; line-height: 1.4;">
+                                <span class="text-primary fw-medium d-block text-truncate mb-1" style="font-size: 0.78rem;"><i class="fa-solid fa-briefcase me-1" style="font-size: 0.72rem;"></i>{{ item.conversation.job_title }}</span>
+                                <span class="d-block text-truncate text-muted" style="font-size: 0.78rem;">{{ item.preview }}</span>
+                            </div>
+                        </a>
+                    {% empty %}
+                        <div class="text-center py-5 px-3">
+                            <i class="fa-regular fa-envelope-open fa-2x text-muted mb-2"></i>
+                            <p class="text-secondary small mb-0">No conversations started yet.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Conversation Placeholder (Desktop only) -->
+        <div class="d-none d-md-block col-md-7 col-lg-8">
+            <div class="card border rounded-4 shadow-sm bg-white d-flex align-items-center justify-content-center text-center p-5" style="height: 600px;">
+                <div style="max-width: 380px;">
+                    <div class="icon-pill mb-3" style="width: 56px; height: 56px; border-radius: 14px; background-color: rgba(45, 91, 255, 0.08); color: #2d5bff;">
+                        <i class="fa-regular fa-comments" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Stay connected with recruiters and candidates</h5>
+                    <p class="text-muted small mb-0">
+                        Select a conversation from the sidebar list to view the message history, schedule meetings, or compose replies.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('searchConversations');
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase().trim();
+            const items = document.querySelectorAll('.conv-item');
+            items.forEach(item => {
+                const name = item.getAttribute('data-name').toLowerCase();
+                const title = item.getAttribute('data-title').toLowerCase();
+                if (name.includes(query) || title.includes(query)) {
+                    item.style.setProperty('display', 'block', 'important');
+                } else {
+                    item.style.setProperty('display', 'none', 'important');
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

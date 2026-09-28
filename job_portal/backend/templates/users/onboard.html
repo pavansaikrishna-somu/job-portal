@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Complete Onboarding | CareerConnect{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center mt-lg-4">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 16px;">
+                <div class="text-center mb-4">
+                    <h1 class="h3 fw-bold text-dark mb-1">Select Your Role</h1>
+                    <p class="text-muted">Choose your path to get started on CareerConnect.</p>
+                </div>
+                
+                <form method="post" id="onboard-form" onsubmit="handleOnboardSubmit(event)" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Selection Rows -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <div class="card p-3 border-2 role-card" id="role-card-seeker" onclick="selectRole('jobseeker')" style="border-radius: 12px; cursor: pointer; transition: all 0.25s ease; border-color: #e2e8f0; background-color: #ffffff;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-circle bg-primary-subtle text-primary p-2.5 rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; transition: all 0.25s ease;">
+                                        <i class="fa-solid fa-briefcase fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">Job Seeker</h5>
+                                        <p class="text-muted small mb-0" style="font-size: 0.8rem;">Search jobs, build your profile, apply, and join Zoom interviews.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-12">
+                            <div class="card p-3 border-2 role-card" id="role-card-recruiter" onclick="selectRole('recruiter')" style="border-radius: 12px; cursor: pointer; transition: all 0.25s ease; border-color: #e2e8f0; background-color: #ffffff;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-circle bg-success-subtle text-success p-2.5 rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; transition: all 0.25s ease;">
+                                        <i class="fa-solid fa-user-tie fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">Recruiter</h5>
+                                        <p class="text-muted small mb-0" style="font-size: 0.8rem;">Post vacancies, screen candidates, and schedule Zoom calls.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="role" id="role-input" value="">
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2.5 fw-bold" id="continue-btn" disabled style="border-radius: 8px; font-size: 0.95rem; transition: all 0.2s ease;">
+                        Continue
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-header border-bottom-0 pb-0 pt-4 px-4">
+                <h5 class="modal-title fw-bold text-dark" id="confirmModalLabel">Confirm Role Selection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="modal-close-x"></button>
+            </div>
+            <div class="modal-body text-dark px-4 py-3">
+                <p class="mb-2 fs-6">Continue as <strong id="modal-role-text" class="text-primary"></strong>?</p>
+                <p class="text-muted small mb-0" style="font-size: 0.825rem; line-height: 1.4;">This controls your portal dashboard layout and access permissions. This configuration is <strong>immutable</strong> and cannot be self-edited later.</p>
+            </div>
+            <div class="modal-footer border-top-0 pt-0 pb-4 px-4 gap-2">
+                <button type="button" class="btn btn-light border flex-grow-1 py-2 fw-semibold" data-bs-dismiss="modal" id="modal-cancel-btn" style="border-radius: 8px; font-size: 0.9rem;">Cancel</button>
+                <button type="button" class="btn btn-primary flex-grow-1 py-2 fw-semibold" id="confirm-btn" onclick="submitOnboardingForm()" style="border-radius: 8px; font-size: 0.9rem;">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f8fafc;
+    }
+    .role-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+</style>
+
+<script>
+    let selectedRole = "";
+    
+    function selectRole(role) {
+        selectedRole = role;
+        document.getElementById('role-input').value = role;
+        document.getElementById('continue-btn').disabled = false;
+        
+        const seekerCard = document.getElementById('role-card-seeker');
+        const recruiterCard = document.getElementById('role-card-recruiter');
+        
+        if (role === 'jobseeker') {
+            seekerCard.style.borderColor = '#2563eb';
+            seekerCard.style.backgroundColor = '#eff6ff';
+            seekerCard.querySelector('.icon-circle').style.backgroundColor = '#2563eb';
+            seekerCard.querySelector('.icon-circle').style.color = '#ffffff';
+            
+            recruiterCard.style.borderColor = '#e2e8f0';
+            recruiterCard.style.backgroundColor = '#ffffff';
+            recruiterCard.querySelector('.icon-circle').style.backgroundColor = '#d1e7dd';
+            recruiterCard.querySelector('.icon-circle').style.color = '#0f5132';
+        } else {
+            recruiterCard.style.borderColor = '#16a34a';
+            recruiterCard.style.backgroundColor = '#f0fdf4';
+            recruiterCard.querySelector('.icon-circle').style.backgroundColor = '#16a34a';
+            recruiterCard.querySelector('.icon-circle').style.color = '#ffffff';
+            
+            seekerCard.style.borderColor = '#e2e8f0';
+            seekerCard.style.backgroundColor = '#ffffff';
+            seekerCard.querySelector('.icon-circle').style.backgroundColor = '#cfe2ff';
+            seekerCard.querySelector('.icon-circle').style.color = '#084298';
+        }
+    }
+    
+    function handleOnboardSubmit(event) {
+        event.preventDefault();
+        if (!selectedRole) {
+            return;
+        }
+        
+        const roleName = selectedRole === 'jobseeker' ? 'Job Seeker' : 'Recruiter';
+        const roleLabel = document.getElementById('modal-role-text');
+        roleLabel.textContent = roleName;
+        if (selectedRole === 'jobseeker') {
+            roleLabel.className = 'text-primary';
+        } else {
+            roleLabel.className = 'text-success';
+        }
+        
+        const modalEl = document.getElementById('confirmModal');
+        const confirmModal = new bootstrap.Modal(modalEl);
+        confirmModal.show();
+    }
+    
+    function submitOnboardingForm() {
+        const confirmBtn = document.getElementById('confirm-btn');
+        const cancelBtn = document.getElementById('modal-cancel-btn');
+        const closeX = document.getElementById('modal-close-x');
+        
+        confirmBtn.disabled = true;
+        cancelBtn.disabled = true;
+        closeX.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true"></span>Saving...';
+        
+        document.getElementById('onboard-form').submit();
+    }
+</script>
+{% endblock %}

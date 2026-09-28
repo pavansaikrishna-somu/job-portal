@@ -1,34 +1,193 @@
 {% extends 'base.html' %}
 {% block title %}Login | CareerConnect{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="glass-card hover-lift p-4">
-                <h1 class="h3 mb-2">Welcome back</h1>
-                <p class="text-muted mb-4">Sign in to manage your CareerConnect experience.</p>
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    <div class="form-floating mb-3">
-                        <input type="email" name="email" class="form-control" placeholder="Email" value="{{ form.email.value|default:'' }}" required>
-                        <label>Email</label>
-                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
-                    </div>
-                    <div class="form-floating mb-3">
-                        <input type="password" name="password" class="form-control" placeholder="Password" required>
-                        <label>Password</label>
-                        {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
-                    </div>
-                    <button type="submit" class="btn btn-premium w-100">Sign In</button>
-                </form>
-                <p class="mt-3 mb-0 text-secondary">
-                    New user? <a href="{% url 'users:register' %}">Create an account</a>
-                </p>
-                <p class="mt-2 mb-0 text-secondary">
-                    <a href="{% url 'password_reset' %}">Forgot Password?</a>
-                </p>
-            </div>
+<style>
+    body {
+        background-color: #f1f5f9 !important;
+    }
+    
+    .login-container {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .login-card {
+        max-width: 420px;
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        padding: 2.25rem;
+        margin-top: -6vh;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    
+    .btn-signin {
+        background-color: #2563eb;
+        border-color: #2563eb;
+        color: #ffffff;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-signin:hover:not(:disabled) {
+        background-color: #1d4ed8;
+        border-color: #1d4ed8;
+    }
+    
+    .btn-signin:focus {
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4);
+    }
+    
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle-btn {
+        position: absolute;
+        right: 0px;
+        top: 0px;
+        height: 100%;
+        border: none;
+        background: transparent;
+        padding: 0 0.85rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .password-toggle-btn:focus {
+        outline: none;
+    }
+    
+    .btn-google {
+        border-color: #cbd5e1;
+        background-color: #ffffff;
+        color: #334155;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+    
+    .btn-google:hover {
+        background-color: #f8fafc;
+        border-color: #94a3b8;
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-card">
+        <!-- Brand / Welcome Header -->
+        <div class="text-center mb-4">
+            <h2 class="h4 fw-bold text-dark mb-1">Welcome back</h2>
+            <p class="text-muted small">Sign in to manage your CareerConnect account.</p>
         </div>
+
+        <!-- Session Status & Global Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-danger{% endif %} alert-dismissible fade show p-2.5 small mb-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close p-2.5" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Main Form -->
+        <form method="post" id="login-form" novalidate>
+            {% csrf_token %}
+            
+            <!-- Email / Username input -->
+            <div class="mb-3">
+                <label for="email-field" class="form-label small fw-semibold text-secondary mb-1.5">Email or Username</label>
+                <input type="text" name="email" id="email-field" class="form-control" placeholder="name@example.com or username" value="{{ form.email.value|default:'' }}" required autocomplete="username">
+                {% if form.email.errors %}
+                    <div class="text-danger small mt-1.5">{{ form.email.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Password input -->
+            <div class="mb-1">
+                <label for="password-field" class="form-label small fw-semibold text-secondary mb-1.5">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" name="password" id="password-field" class="form-control" placeholder="••••••••" required autocomplete="current-password" style="padding-right: 2.75rem;">
+                    <button type="button" class="password-toggle-btn" id="password-toggle" onclick="togglePasswordVisibility()" aria-label="Toggle password visibility">
+                        <i class="fa-solid fa-eye" id="eye-icon"></i>
+                    </button>
+                </div>
+                {% if form.password.errors %}
+                    <div class="text-danger small mt-1.5">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Forgot Password Link -->
+            <div class="d-flex justify-content-end mb-4">
+                <a href="{% url 'password_reset' %}" class="small text-decoration-none text-primary fw-medium">Forgot password?</a>
+            </div>
+            
+            <!-- Sign In button -->
+            <button type="submit" class="btn btn-signin w-100 fw-semibold py-2.5 mb-3" id="signin-btn">
+                <span class="spinner-border spinner-border-sm d-none me-2" id="signin-spinner" role="status" aria-hidden="true"></span>
+                Sign in
+            </button>
+        </form>
+
+        <!-- Divider OR -->
+        <div class="d-flex align-items-center my-3.5">
+            <div class="flex-grow-1" style="height: 1px; background-color: #cbd5e1;"></div>
+            <span class="px-3 text-secondary small fw-medium">OR</span>
+            <div class="flex-grow-1" style="height: 1px; background-color: #cbd5e1;"></div>
+        </div>
+
+        <!-- Google OAuth Trigger -->
+        <a href="{% url 'google_login' %}" class="btn btn-google w-100 d-flex align-items-center justify-content-center gap-2 py-2 fw-medium mb-3">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.9c1.69-1.55 2.69-3.85 2.69-6.57z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.9-2.24c-.8.54-1.84.87-3.06.87-2.35 0-4.35-1.59-5.06-3.73H.96v2.3C2.44 15.93 5.47 18 9 18z"/>
+                <path fill="#FBBC05" d="M3.94 10.67c-.18-.54-.28-1.12-.28-1.67s.1-1.13.28-1.67V5.03H.96C.35 6.24 0 7.6 0 9s.35 2.76.96 3.97l2.98-2.3z"/>
+                <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.47.89 11.43 0 9 0 5.47 0 2.44 2.07.96 5.03l2.98 2.3c.71-2.14 2.71-3.75 5.06-3.75z"/>
+            </svg>
+            Continue with Google
+        </a>
+
+        <!-- Sign Up Anchor link -->
+        <p class="text-center mt-3.5 mb-0 text-secondary small">
+            New to CareerConnect? <a href="{% url 'users:register' %}" class="text-decoration-none text-primary fw-semibold">Create an account</a>
+        </p>
     </div>
 </div>
+
+<script>
+    // 1. Password Visibility Toggle
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password-field');
+        const eyeIcon = document.getElementById('eye-icon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.className = 'fa-solid fa-eye-slash';
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.className = 'fa-solid fa-eye';
+        }
+    }
+
+    // 2. Prevent Double Form Submission & Show Loader Spinner
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        const btn = document.getElementById('signin-btn');
+        const spinner = document.getElementById('signin-spinner');
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+    });
+</script>
 {% endblock %}

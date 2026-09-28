@@ -1,17 +1,330 @@
 {% extends 'base.html' %}
 {% load tz %}
 {% block title %}Applicants | CareerConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Compact Job Context Card */
+    .job-context-card {
+        background: var(--portal-card);
+        border: 1px solid var(--portal-border);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        box-shadow: var(--portal-shadow);
+    }
+
+    /* Seeker Empty State */
+    .seeker-empty-box {
+        text-align: center;
+        padding: 3.5rem 1.5rem;
+        background: var(--portal-card);
+        border: 1px dashed var(--portal-border);
+        border-radius: 12px;
+        box-shadow: var(--portal-shadow);
+    }
+
+    .seeker-empty-icon {
+        width: 56px;
+        height: 56px;
+        background: rgba(148, 163, 184, 0.08);
+        color: var(--portal-muted);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        margin-bottom: 1rem;
+    }
+
+    .seeker-empty-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--portal-secondary);
+        margin-bottom: 0.25rem;
+    }
+
+    .seeker-empty-desc {
+        font-size: 0.82rem;
+        color: var(--portal-muted);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Details Grid cards */
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
+        margin-top: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .details-section {
+        background: #f8fafc;
+        border: 1px solid var(--portal-border);
+        border-radius: 10px;
+        padding: 1.25rem;
+    }
+
+    .details-title {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--portal-secondary);
+        border-bottom: 1px solid var(--portal-border);
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .details-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.04);
+        padding-bottom: 0.25rem;
+    }
+
+    .details-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+
+    .details-item span {
+        font-weight: 600;
+        color: var(--portal-muted);
+    }
+
+    /* Mobile Responsive Card Conversion */
+    @media (max-width: 992px) {
+        .table-premium thead {
+            display: none;
+        }
+        .table-premium tbody tr:not(.applicant-details-row) {
+            display: block;
+            background: var(--portal-card);
+            border: 1px solid var(--portal-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--portal-shadow);
+        }
+        .table-premium tbody tr.applicant-details-row {
+            display: block;
+            border: none;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+        .table-premium tbody tr.applicant-details-row td {
+            display: block;
+            width: 100% !important;
+            border: none;
+            padding: 0;
+        }
+        .table-premium tbody tr:not(.applicant-details-row) td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: none;
+            padding: 0.5rem 0;
+            width: 100% !important;
+            text-align: right;
+        }
+        .table-premium tbody tr:not(.applicant-details-row) td::before {
+            content: attr(data-label);
+            font-weight: 700;
+            color: var(--portal-secondary);
+            float: left;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+        .table-premium tbody tr:not(.applicant-details-row) td:last-child {
+            justify-content: flex-end;
+            padding-top: 1rem;
+            border-top: 1px solid var(--portal-border);
+            text-align: right;
+        }
+    }
+
+    /* Refined Table Actions Layout & Consistency */
+    .actions-col {
+        min-width: 140px !important;
+    }
+    
+    .action-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .action-btn, .resume-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        padding: 0 0.75rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border-radius: 6px;
+        gap: 0.35rem;
+        white-space: nowrap;
+        box-sizing: border-box;
+        transition: all 0.2s ease-in-out;
+        text-decoration: none;
+    }
+    
+    .action-btn:focus, .resume-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    }
+
+    .action-btn i, .resume-btn i {
+        font-size: 0.85rem;
+    }
+    
+    /* Floating Dropdown Menus */
+    .portal-dropdown-menu {
+        position: absolute;
+        z-index: 1060;
+        display: none;
+        min-width: 180px;
+        padding: 0.5rem 0;
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--portal-secondary);
+        text-align: left;
+        list-style: none;
+        background-color: #ffffff;
+        background-clip: padding-box;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .portal-dropdown-menu.show {
+        display: block;
+    }
+    
+    .portal-dropdown-item {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        clear: both;
+        font-weight: 500;
+        color: var(--portal-secondary);
+        text-align: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+        background-color: transparent;
+        border: 0;
+        gap: 0.5rem;
+        transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+    
+    .portal-dropdown-item:hover, .portal-dropdown-item:focus {
+        color: var(--portal-primary);
+        background-color: rgba(37, 99, 235, 0.04);
+        outline: none;
+    }
+    
+    .portal-dropdown-item.disabled {
+        color: var(--portal-muted);
+        pointer-events: none;
+        background-color: transparent;
+        opacity: 0.6;
+    }
+    
+    .portal-dropdown-divider {
+        height: 0;
+        margin: 0.4rem 0;
+        overflow: hidden;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    
+    .portal-dropdown-header {
+        display: block;
+        padding: 0.35rem 1rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--portal-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .portal-dropdown-trigger:focus-visible {
+        outline: 2px solid var(--portal-primary) !important;
+        outline-offset: 2px;
+    }
+
+    /* Chevron Rotation on Open */
+    .portal-dropdown-trigger.open i.fa-chevron-down {
+        transform: rotate(180deg);
+    }
+    
+    .portal-dropdown-trigger i.fa-chevron-down {
+        transition: transform 0.2s ease;
+    }
+    
+    @media (max-width: 992px) {
+        .actions-col {
+            min-width: auto !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 mb-0">Applicants Management</h1>
-        <a href="{% url 'jobs:manage_jobs' %}" class="btn btn-outline-secondary">Back to Jobs</a>
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="page-header-row">
+            <div>
+                <span class="page-header-pretitle">Recruitment</span>
+                <h1 class="page-header-title">Applicants</h1>
+                <p class="page-header-description">Review candidates and manage applications for this position.</p>
+            </div>
+            <div class="page-header-actions">
+                <a href="{% url 'jobs:manage_jobs' %}" class="btn btn-outline-dark btn-sm px-3 py-2">
+                    <i class="fa-solid fa-arrow-left me-1.5"></i>Back to Jobs
+                </a>
+            </div>
+        </div>
     </div>
 
-    <div class="glass-card hover-lift p-3 mb-4">
-        <form method="get" class="row g-3">
-            <div class="col-md-6">
-                <select name="job" class="form-select">
+    <!-- Job Context Summary Card -->
+    {% if selected_job %}
+        {% for job in jobs %}
+            {% if selected_job == job.id|stringformat:"s" %}
+                <div class="job-context-card mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        <div>
+                            <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">Filtered Position Context</span>
+                            <h2 class="h6 fw-bold text-dark mb-1" style="font-size: 1.05rem;">{{ job.title }}</h2>
+                            <p class="text-muted small mb-0 d-flex flex-wrap align-items-center gap-3">
+                                <span><i class="fa-solid fa-location-dot me-1 text-primary"></i>{{ job.location }}</span>
+                                <span><i class="fa-solid fa-briefcase me-1 text-accent"></i>{{ job.experience }}</span>
+                                <span><i class="fa-solid fa-money-bill-wave me-1 text-success"></i>{{ job.salary }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- Filter Control Card -->
+    <div class="glass-card p-3 mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <select name="job" class="form-select form-select-sm">
                     <option value="">All Jobs</option>
                     {% for job in jobs %}
                         <option value="{{ job.id }}" {% if selected_job == job.id|stringformat:"s" %}selected{% endif %}>
@@ -20,8 +333,8 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-4">
-                <select name="status" class="form-select">
+            <div class="col-md-5">
+                <select name="status" class="form-select form-select-sm">
                     <option value="">All Status</option>
                     {% for status in status_options %}
                         <option value="{{ status }}" {% if selected_status == status %}selected{% endif %}>{{ status }}</option>
@@ -29,144 +342,455 @@
                 </select>
             </div>
             <div class="col-md-2 d-grid">
-                <button class="btn btn-primary">Filter</button>
+                <button class="btn btn-premium btn-sm py-2"><i class="fa-solid fa-filter me-1.5"></i>Filter</button>
             </div>
         </form>
     </div>
 
-    <div class="glass-card hover-lift">
-        <div class="table-responsive">
-            <table class="table table-premium align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Applicant</th>
-                        <th>Email</th>
-                        <th>Job</th>
-                        <th>Status</th>
-                        <th>Applied Date</th>
-                        <th>Resume</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for application in applications %}
+    <!-- Applicants List -->
+    {% if applications %}
+        <div class="glass-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-premium align-middle mb-0" style="font-size: 0.88rem;">
+                    <thead class="table-light">
                         <tr>
-                            <td>{{ application.applicant_name }}</td>
-                            <td>{{ application.applicant_email }}</td>
-                            <td>{{ application.job_title }}</td>
-                            <td>
-                                <span class="status-pill
-                                    {% if application.status == 'Shortlisted' %}status-pill--success
-                                    {% elif application.status == 'Rejected' %}status-pill--danger
-                                    {% elif application.status == 'Reviewed' %}status-pill--info
-                                    {% else %}status-pill--warning{% endif %}">
-                                    {{ application.status }}
-                                </span>
-                            </td>
-                            <td>{{ application.applied_at|localtime|date:"d M Y, h:i A" }}</td>
-                            <td>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <a href="{% url 'applications:resume_access' application.id 'view' %}" target="_blank" class="btn btn-sm btn-outline-dark">
-                                        View Resume
-                                    </a>
-                                    <a href="{% url 'applications:resume_access' application.id 'download' %}" class="btn btn-sm btn-outline-secondary">
-                                        Download
-                                    </a>
-                                    <a href="{% url 'applications:resume_access' application.id 'view' %}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                        Quick Preview
-                                    </a>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <button class="btn btn-sm btn-premium" data-bs-toggle="collapse" data-bs-target="#details-{{ application.id }}" aria-expanded="false">
-                                        View Details
-                                    </button>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-dark dropdown-toggle" data-bs-toggle="dropdown">
-                                            Change Status
+                            <th>Applicant</th>
+                            <th>Job Title</th>
+                            <th>Applied Date</th>
+                            <th>Status</th>
+                            <th class="text-end actions-col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in applications %}
+                            <tr class="align-middle">
+                                <td data-label="Applicant">
+                                    <div class="fw-bold text-dark">{{ application.applicant_name }}</div>
+                                    <div class="text-muted small" style="font-size: 0.75rem;">{{ application.applicant_email }}</div>
+                                </td>
+                                <td data-label="Job Title">
+                                    <div class="text-secondary fw-semibold">{{ application.job_title }}</div>
+                                </td>
+                                <td data-label="Applied Date">
+                                    <span class="text-muted small">{{ application.applied_at|localtime|date:"d M Y, h:i A" }}</span>
+                                </td>
+                                <td data-label="Status">
+                                    <span class="badge
+                                        {% if application.status == 'Shortlisted' %}text-bg-success
+                                        {% elif application.status == 'Rejected' %}text-bg-danger
+                                        {% elif application.status == 'Reviewed' %}text-bg-info
+                                        {% else %}text-bg-warning{% endif %}">
+                                        {{ application.status }}
+                                    </span>
+                                </td>
+                                <td data-label="Actions" class="text-end actions-col">
+                                    <div class="action-group">
+                                        <button id="details-btn-{{ application.id }}" class="d-none" data-bs-toggle="collapse" data-bs-target="#details-{{ application.id }}"></button>
+                                        <button class="btn btn-sm btn-outline-secondary portal-dropdown-trigger" 
+                                                data-dropdown-type="actions"
+                                                data-application-id="{{ application.id }}"
+                                                data-applicant-name="{{ application.applicant_name|escapejs }}"
+                                                data-job-title="{{ application.job_title|escapejs }}"
+                                                data-status="{{ application.status }}"
+                                                data-has-resume="{% if application.resume %}true{% else %}false{% endif %}"
+                                                data-view-resume-url="{% url 'applications:resume_access' application.id 'view' %}"
+                                                data-download-resume-url="{% url 'applications:resume_access' application.id 'download' %}"
+                                                data-start-conversation-url="{% url 'messages_box:start_conversation_recruiter' application.id %}"
+                                                {% if application.status == 'Shortlisted' %}
+                                                    {% if application.active_interview %}
+                                                        data-interview-url="{% url 'interviews:view_interview' application.active_interview.id %}"
+                                                    {% else %}
+                                                        data-schedule-url="{% url 'interviews:schedule_interview' application.id %}"
+                                                    {% endif %}
+                                                {% endif %}
+                                                aria-haspopup="true" aria-expanded="false" aria-label="Actions dropdown menu"
+                                                style="font-size: 0.78rem; min-width: 100px; height: 32px;">
+                                            Actions <i class="fa-solid fa-chevron-down ms-1.5"></i>
                                         </button>
-                                        <ul class="dropdown-menu">
-                                            {% for status in status_options %}
-                                                <li>
-                                                    <a class="dropdown-item" href="{% url 'applications:update_status' application.id status %}?next={{ request.get_full_path }}">
-                                                        {{ status }}
-                                                    </a>
-                                                </li>
-                                            {% endfor %}
-                                        </ul>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="applicant-details-row collapse" id="details-{{ application.id }}">
-                            <td colspan="7">
-                                <div class="applicant-details-card glass-card hover-lift p-4 p-lg-5">
-                                    <div class="applicant-header">
-                                        <div class="applicant-avatar">
-                                            <i class="fa-solid fa-user"></i>
-                                        </div>
-                                        <div>
-                                            <h3 class="h5 mb-1">{{ application.applicant_name }}</h3>
-                                            <p class="text-muted mb-0">Applied for {{ application.job_title }}</p>
-                                        </div>
-                                        <div class="applicant-status">
-                                            <span class="status-pill
-                                                {% if application.status == 'Shortlisted' %}status-pill--success
-                                                {% elif application.status == 'Rejected' %}status-pill--danger
-                                                {% elif application.status == 'Reviewed' %}status-pill--info
-                                                {% else %}status-pill--warning{% endif %}">
-                                                {{ application.status }}
-                                            </span>
-                                            <span class="text-muted small">{{ application.applied_at|localtime|date:"d M Y, h:i A" }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="details-grid">
-                                        <div class="details-section">
-                                            <h4 class="details-title"><i class="fa-solid fa-id-card"></i>Overview</h4>
-                                            <p class="details-item"><span>Full Name</span>{{ application.applicant_name }}</p>
-                                            <p class="details-item"><span>Email</span>{{ application.applicant_email }}</p>
-                                            <p class="details-item"><span>Phone</span>Not provided</p>
-                                            <p class="details-item"><span>Location</span>Not provided</p>
-                                            <p class="details-item"><span>Professional Title</span>Not provided</p>
-                                            <p class="details-item"><span>Experience Level</span>Not provided</p>
-                                        </div>
-                                        <div class="details-section">
-                                            <h4 class="details-title"><i class="fa-solid fa-briefcase"></i>Application Details</h4>
-                                            <p class="details-item"><span>Applied Job</span>{{ application.job_title }}</p>
-                                            <p class="details-item"><span>Application Date</span>{{ application.applied_at|localtime|date:"d M Y, h:i A" }}</p>
-                                            <p class="details-item"><span>Availability</span>Not provided</p>
-                                            <p class="details-item"><span>Status</span>{{ application.status }}</p>
-                                            <p class="details-item"><span>Why should we hire you</span>{{ application.cover_letter|default:"Not provided" }}</p>
-                                            <p class="details-item"><span>Interested role explanation</span>{{ application.cover_letter|default:"Not provided" }}</p>
-                                        </div>
-                                        <div class="details-section">
-                                            <h4 class="details-title"><i class="fa-solid fa-layer-group"></i>Professional Details</h4>
-                                            <p class="details-item"><span>Skills</span>Not provided</p>
-                                            <p class="details-item"><span>Education</span>Not provided</p>
-                                            <p class="details-item"><span>Certifications</span>Not provided</p>
-                                            <p class="details-item"><span>Portfolio / GitHub</span><a href="#" class="details-link disabled" aria-disabled="true">Not provided</a></p>
-                                            <p class="details-item"><span>LinkedIn</span><a href="#" class="details-link disabled" aria-disabled="true">Not provided</a></p>
-                                        </div>
-                                        <div class="details-section">
-                                            <h4 class="details-title"><i class="fa-solid fa-file-lines"></i>Resume & Links</h4>
-                                            <div class="d-flex flex-wrap gap-2">
-                                                <a href="{% url 'applications:resume_access' application.id 'view' %}" target="_blank" class="btn btn-sm btn-outline-dark">View Resume</a>
-                                                <a href="{% url 'applications:resume_access' application.id 'download' %}" class="btn btn-sm btn-outline-secondary">Download Resume</a>
+                                </td>
+                            </tr>
+                            <!-- Details Collapse Row -->
+                            <tr class="applicant-details-row collapse" id="details-{{ application.id }}">
+                                <td colspan="5" class="p-0 border-0">
+                                    <div class="p-4 border-bottom border-light bg-light-subtle">
+                                        <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom border-light-subtle">
+                                            <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 48px; height: 48px; font-size: 1.15rem; border: 1px solid var(--portal-border);">
+                                                {{ application.applicant_name|slice:":1"|upper }}
                                             </div>
-                                            <p class="details-item mt-3"><span>Profile Completion</span>Not available</p>
-                                            <p class="details-item"><span>Total Applications</span>Not available</p>
+                                            <div>
+                                                <h3 class="h6 fw-bold text-dark mb-0.5">{{ application.applicant_name }}</h3>
+                                                <p class="text-muted mb-0 small">Candidate for position: <strong>{{ application.job_title }}</strong></p>
+                                            </div>
+                                        </div>
+                                        <div class="details-grid">
+                                            <div class="details-section">
+                                                <h4 class="details-title"><i class="fa-solid fa-id-card text-primary"></i>Personal Details</h4>
+                                                <p class="details-item"><span>Full Name</span>{{ application.applicant_name }}</p>
+                                                <p class="details-item"><span>Email Address</span>{{ application.applicant_email }}</p>
+                                                <p class="details-item"><span>Phone Number</span>Not provided</p>
+                                                <p class="details-item"><span>Current Location</span>Not provided</p>
+                                            </div>
+                                            <div class="details-section">
+                                                <h4 class="details-title"><i class="fa-solid fa-briefcase text-accent"></i>Application overview</h4>
+                                                <p class="details-item"><span>Position</span>{{ application.job_title }}</p>
+                                                <p class="details-item"><span>Date Submitted</span>{{ application.applied_at|localtime|date:"d M Y, h:i A" }}</p>
+                                                <p class="details-item"><span>Cover Letter</span>{{ application.cover_letter|default:"Not provided" }}</p>
+                                                <p class="details-item"><span>Status</span>{{ application.status }}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr><td colspan="7" class="text-center py-4">No applications found.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="seeker-empty-box">
+            <span class="seeker-empty-icon"><i class="fa-regular fa-folder-open"></i></span>
+            <h3 class="seeker-empty-title">No applicants yet</h3>
+            <p class="seeker-empty-desc">Applications for this job will appear here once candidates apply.</p>
+            <a href="{% url 'jobs:manage_jobs' %}" class="btn btn-premium px-4">
+                Back to Jobs
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 12px; border: 1px solid var(--portal-border); box-shadow: var(--portal-shadow); background: #ffffff;">
+            <div class="modal-header border-bottom border-light">
+                <h5 class="modal-title fw-bold text-dark" id="statusModalLabel">
+                    <i class="fa-solid fa-circle-check text-primary me-2"></i>Update Application Status
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="statusForm" method="POST" action="">
+                {% csrf_token %}
+                <input type="hidden" id="modalAppId" name="application_id" value="">
+                <input type="hidden" id="modalOrigStatus" name="original_status" value="">
+                <div class="modal-body py-4 text-start">
+                    <div class="mb-3">
+                        <span class="text-muted small d-block mb-1">Applicant Name</span>
+                        <div class="fw-bold text-dark fs-6" id="modalApplicantName"></div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small d-block mb-1">Job Title</span>
+                        <div class="text-secondary fw-semibold" id="modalJobTitle"></div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small d-block mb-1">Current Status</span>
+                        <span class="badge" id="modalCurrentStatus"></span>
+                    </div>
+                    <div class="mb-1">
+                        <label for="modalStatusSelect" class="form-label text-muted small fw-bold">Select New Status</label>
+                        <select id="modalStatusSelect" class="form-select">
+                            {% for status in status_options %}
+                                <option value="{{ status }}">{{ status }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-light py-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm py-2 px-3 fw-bold" style="border-radius: 6px;" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-premium btn-sm py-2 px-3 fw-bold" style="border-radius: 6px;">Update Status</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeDropdown = null;
+    let activeTrigger = null;
+
+    function openStatusModal(appId, applicantName, jobTitle, currentStatus) {
+        document.getElementById('modalApplicantName').innerText = applicantName;
+        document.getElementById('modalJobTitle').innerText = jobTitle;
+        
+        const badge = document.getElementById('modalCurrentStatus');
+        badge.innerText = currentStatus;
+        badge.className = "badge " + (
+            currentStatus === 'Shortlisted' ? 'text-bg-success' :
+            currentStatus === 'Rejected' ? 'text-bg-danger' :
+            currentStatus === 'Reviewed' ? 'text-bg-info' : 'text-bg-warning'
+        );
+        
+        const select = document.getElementById('modalStatusSelect');
+        select.value = currentStatus;
+        
+        document.getElementById('modalAppId').value = appId;
+        document.getElementById('modalOrigStatus').value = currentStatus;
+        
+        const modal = new bootstrap.Modal(document.getElementById('statusModal'));
+        modal.show();
+    }
+    
+    document.getElementById('statusForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const appId = document.getElementById('modalAppId').value;
+        const origStatus = document.getElementById('modalOrigStatus').value;
+        const newStatus = document.getElementById('modalStatusSelect').value;
+        
+        if (newStatus === origStatus) {
+            const modalEl = document.getElementById('statusModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+            return;
+        }
+        
+        let actionUrl = "{% url 'applications:update_status' 'APP_ID_PLACEHOLDER' 'STATUS_PLACEHOLDER' %}";
+        actionUrl = actionUrl.replace('APP_ID_PLACEHOLDER', appId).replace('STATUS_PLACEHOLDER', newStatus);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('next', window.location.pathname + window.location.search);
+        actionUrl += "?" + urlParams.toString();
+        
+        this.action = actionUrl;
+        this.submit();
+    });
+
+    function createDropdownMenu() {
+        if (activeDropdown) {
+            activeDropdown.remove();
+        }
+        const menu = document.createElement('div');
+        menu.className = 'portal-dropdown-menu';
+        document.body.appendChild(menu);
+        activeDropdown = menu;
+        return menu;
+    }
+
+    function submitStatusUpdate(appId, newStatus) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        let actionUrl = "{% url 'applications:update_status' 'APP_ID_PLACEHOLDER' 'STATUS_PLACEHOLDER' %}";
+        actionUrl = actionUrl.replace('APP_ID_PLACEHOLDER', appId).replace('STATUS_PLACEHOLDER', newStatus);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('next', window.location.pathname + window.location.search);
+        form.action = actionUrl + "?" + urlParams.toString();
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = '{{ csrf_token }}';
+        form.appendChild(csrfInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function closeDropdown() {
+        const triggerToFocus = activeTrigger;
+        if (activeDropdown) {
+            activeDropdown.remove();
+            activeDropdown = null;
+        }
+        if (activeTrigger) {
+            activeTrigger.classList.remove('open');
+            activeTrigger.setAttribute('aria-expanded', 'false');
+            activeTrigger = null;
+        }
+        if (triggerToFocus) {
+            triggerToFocus.focus();
+        }
+    }
+
+    function positionDropdown(trigger, menu) {
+        const rect = trigger.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+        
+        let top = rect.bottom + scrollTop;
+        let left = rect.left + scrollLeft;
+        
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+        menu.classList.add('show');
+        
+        const menuRect = menu.getBoundingClientRect();
+        const menuWidth = menuRect.width;
+        const menuHeight = menuRect.height;
+        
+        // Align to the right edge of the Actions button
+        left = rect.right + scrollLeft - menuWidth;
+        
+        // Ensure it stays inside the viewport
+        if (left < 10) {
+            left = 10;
+        } else if (left + menuWidth > window.innerWidth) {
+            left = window.innerWidth - menuWidth - 10;
+        }
+        
+        // Flip upward if insufficient space below
+        if (rect.bottom + menuHeight > window.innerHeight && rect.top - menuHeight > 0) {
+            top = rect.top + scrollTop - menuHeight - 4;
+        }
+        
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+    }
+
+    document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('.portal-dropdown-trigger');
+        
+        if (trigger) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isOpen = trigger.classList.contains('open');
+            closeDropdown();
+            
+            if (!isOpen) {
+                activeTrigger = trigger;
+                trigger.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+                
+                const menu = createDropdownMenu();
+                const type = trigger.getAttribute('data-dropdown-type');
+                
+                if (type === 'actions') {
+                    const appId = trigger.getAttribute('data-application-id');
+                    const name = trigger.getAttribute('data-applicant-name');
+                    const jobTitle = trigger.getAttribute('data-job-title');
+                    const status = trigger.getAttribute('data-status');
+                    const hasResume = trigger.getAttribute('data-has-resume') === 'true';
+                    const viewResumeUrl = trigger.getAttribute('data-view-resume-url');
+                    const downloadResumeUrl = trigger.getAttribute('data-download-resume-url');
+                    const messageUrl = trigger.getAttribute('data-start-conversation-url');
+                    const scheduleUrl = trigger.getAttribute('data-schedule-url');
+                    const interviewUrl = trigger.getAttribute('data-interview-url');
+                    
+                    let html = '';
+                    
+                    // 1. View Resume
+                    if (hasResume) {
+                        html += `
+                            <a class="portal-dropdown-item" href="${viewResumeUrl}" target="_blank">
+                                <i class="fa-solid fa-eye text-primary"></i> View Resume
+                            </a>
+                        `;
+                    } else {
+                        html += `
+                            <button class="portal-dropdown-item disabled" disabled>
+                                <i class="fa-solid fa-file-circle-xmark text-muted"></i> No Resume Available
+                            </button>
+                        `;
+                    }
+                    
+                    // 2. Download Resume
+                    if (hasResume) {
+                        html += `
+                            <a class="portal-dropdown-item" href="${downloadResumeUrl}">
+                                <i class="fa-solid fa-download text-secondary"></i> Download Resume
+                            </a>
+                        `;
+                    } else {
+                        html += `
+                            <button class="portal-dropdown-item disabled" disabled>
+                                <i class="fa-solid fa-file-circle-xmark text-muted"></i> Download Resume
+                            </button>
+                        `;
+                    }
+                    
+                    // 3. View Details
+                    html += `
+                        <button class="portal-dropdown-item" onclick="document.getElementById('details-btn-${appId}').click()">
+                            <i class="fa-solid fa-circle-info text-info"></i> View Details
+                        </button>
+                    `;
+                    
+                    // 4. Message Candidate
+                    html += `
+                        <a class="portal-dropdown-item" href="${messageUrl}">
+                            <i class="fa-solid fa-comment text-warning"></i> Message Candidate
+                        </a>
+                    `;
+                    
+                    // 5. Schedule/View Interview
+                    if (status === 'Shortlisted') {
+                        if (interviewUrl) {
+                            html += `
+                                <a class="portal-dropdown-item" href="${interviewUrl}">
+                                    <i class="fa-solid fa-calendar-check text-success"></i> View Interview
+                                </a>
+                            `;
+                        } else if (scheduleUrl) {
+                            html += `
+                                <a class="portal-dropdown-item" href="${scheduleUrl}">
+                                    <i class="fa-solid fa-calendar-days text-success"></i> Schedule Interview
+                                </a>
+                            `;
+                        }
+                    }
+                    
+                    // 6. Divider
+                    html += `<div class="portal-dropdown-divider"></div>`;
+                    
+                    // 7. Update Status
+                    html += `<span class="portal-dropdown-header">Update Status</span>`;
+                    
+                    if (status === 'Withdrawn') {
+                        html += `
+                            <button class="portal-dropdown-item disabled" disabled>
+                                <i class="fa-solid fa-ban text-danger"></i> Withdrawn
+                            </button>
+                        `;
+                    } else {
+                        const states = ["Pending", "Reviewed", "Shortlisted", "Rejected"];
+                        states.forEach(s => {
+                            if (s === status) {
+                                html += `
+                                    <button class="portal-dropdown-item disabled fw-bold" disabled>
+                                        <i class="fa-solid fa-circle-dot text-primary"></i> ${s} (Current)
+                                    </button>
+                                `;
+                            } else {
+                                html += `
+                                    <button class="portal-dropdown-item" onclick="submitStatusUpdate('${appId}', '${s}')">
+                                        <i class="fa-solid fa-circle-chevron-right text-muted"></i> Mark as ${s}
+                                    </button>
+                                `;
+                            }
+                        });
+                    }
+                    
+                    menu.innerHTML = html;
+                    
+                    // Auto-focus first focusable item
+                    const firstFocusable = menu.querySelector('.portal-dropdown-item:not(.disabled)');
+                    if (firstFocusable) {
+                        setTimeout(() => firstFocusable.focus(), 50);
+                    }
+                }
+                
+                positionDropdown(trigger, menu);
+            }
+            return;
+        }
+        
+        if (activeDropdown && !activeDropdown.contains(e.target)) {
+            closeDropdown();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDropdown();
+        }
+    });
+
+    window.addEventListener('scroll', closeDropdown, true);
+    window.addEventListener('resize', closeDropdown);
+</script>
 {% endblock %}

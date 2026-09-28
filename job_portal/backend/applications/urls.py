@@ -10,4 +10,5 @@ urlpatterns = [
     path("applicants/", views.applicants, name="applicants"),
     path("status/<str:application_id>/<str:new_status>/", views.update_status, name="update_status"),
     path("resume/<str:application_id>/<str:mode>/", views.resume_access, name="resume_access"),
+    path("withdraw/<str:application_id>/", views.withdraw_application, name="withdraw_application"),
 ]

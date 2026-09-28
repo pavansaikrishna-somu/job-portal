@@ -1,50 +1,578 @@
 {% extends 'base.html' %}
 {% load tz %}
 {% block title %}My Applications | CareerConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Metric Cards Grid */
+    .seeker-metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 992px) {
+        .seeker-metric-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .seeker-metric-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .seeker-metric-card {
+        background: #f8fafc;
+        border: 1px solid var(--portal-border);
+        border-radius: 12px;
+        padding: 1.1rem 1.25rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.01);
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    
+    .seeker-metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+        background: #ffffff;
+    }
+    
+    .seeker-metric-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.35rem;
+    }
+    
+    .seeker-metric-num {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--portal-secondary);
+        line-height: 1;
+    }
+    
+    .seeker-metric-icon {
+        font-size: 1rem;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .seeker-metric-lbl {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--portal-secondary);
+        margin-bottom: 0.05rem;
+    }
+    
+    .seeker-metric-support {
+        font-size: 0.75rem;
+        color: var(--portal-muted);
+        font-weight: 500;
+    }
+
+    .bg-light-blue { background: rgba(45, 91, 255, 0.08); color: var(--portal-primary); }
+    .bg-light-green { background: rgba(16, 185, 129, 0.08); color: #10b981; }
+    .bg-light-amber { background: rgba(245, 158, 11, 0.08); color: var(--portal-highlight); }
+    .bg-light-violet { background: rgba(124, 58, 237, 0.08); color: var(--portal-accent); }
+
+    /* Seeker Empty State */
+    .seeker-empty-box {
+        text-align: center;
+        padding: 3.5rem 1.5rem;
+        background: var(--portal-card);
+        border: 1px dashed var(--portal-border);
+        border-radius: 12px;
+        box-shadow: var(--portal-shadow);
+    }
+
+    .seeker-empty-icon {
+        width: 56px;
+        height: 56px;
+        background: rgba(148, 163, 184, 0.08);
+        color: var(--portal-muted);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        margin-bottom: 1rem;
+    }
+
+    .seeker-empty-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--portal-secondary);
+        margin-bottom: 0.25rem;
+    }
+
+    .seeker-empty-desc {
+        font-size: 0.82rem;
+        color: var(--portal-muted);
+        margin-bottom: 1.5rem;
+    }
+
+    /* Mobile Responsive Card Conversion */
+    @media (max-width: 576px) {
+        .table-premium thead {
+            display: none;
+        }
+        .table-premium tbody tr {
+            display: block;
+            background: var(--portal-card);
+            border: 1px solid var(--portal-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--portal-shadow);
+        }
+        .table-premium tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: none;
+            padding: 0.5rem 0;
+            width: 100% !important;
+            text-align: right;
+        }
+        .table-premium tbody td::before {
+            content: attr(data-label);
+            font-weight: 700;
+            color: var(--portal-secondary);
+            float: left;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+        .table-premium tbody td:last-child {
+            justify-content: flex-end;
+            padding-top: 1rem;
+            border-top: 1px solid var(--portal-border);
+            text-align: right;
+        }
+    }
+
+    /* Refined Table Actions Layout & Consistency */
+    .actions-col {
+        min-width: 140px !important;
+    }
+    
+    .action-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        padding: 0 0.75rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border-radius: 6px;
+        gap: 0.35rem;
+        white-space: nowrap;
+        box-sizing: border-box;
+        transition: all 0.2s ease-in-out;
+        text-decoration: none;
+    }
+    
+    .action-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    }
+
+    .action-btn i {
+        font-size: 0.85rem;
+    }
+    
+    /* Floating Dropdown Menus */
+    .portal-dropdown-menu {
+        position: absolute;
+        z-index: 1060;
+        display: none;
+        min-width: 185px;
+        padding: 0.5rem 0;
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--portal-secondary);
+        text-align: left;
+        list-style: none;
+        background-color: #ffffff;
+        background-clip: padding-box;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    .portal-dropdown-menu.show {
+        display: block;
+    }
+    
+    .portal-dropdown-item {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 1rem;
+        clear: both;
+        font-weight: 500;
+        color: var(--portal-secondary);
+        text-align: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+        background-color: transparent;
+        border: 0;
+        gap: 0.5rem;
+        transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    }
+    
+    .portal-dropdown-item:hover, .portal-dropdown-item:focus {
+        color: var(--portal-primary);
+        background-color: rgba(37, 99, 235, 0.04);
+        outline: none;
+    }
+    
+    .portal-dropdown-item.disabled {
+        color: var(--portal-muted);
+        pointer-events: none;
+        background-color: transparent;
+        opacity: 0.6;
+    }
+    
+    .portal-dropdown-divider {
+        height: 0;
+        margin: 0.4rem 0;
+        overflow: hidden;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    /* Chevron Rotation on Open */
+    .portal-dropdown-trigger.open i.fa-chevron-down {
+        transform: rotate(180deg);
+    }
+    
+    .portal-dropdown-trigger i.fa-chevron-down {
+        transition: transform 0.2s ease;
+    }
+    
+    @media (max-width: 576px) {
+        .actions-col {
+            min-width: auto !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div>
-            <h1 class="h3 mb-1">My Applications</h1>
-            <p class="text-muted mb-0">Track every submission and status update in one place.</p>
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="page-header mb-4">
+        <div class="page-header-row">
+            <div>
+                <span class="page-header-pretitle">Career Path</span>
+                <h1 class="page-header-title">My Applications</h1>
+                <p class="page-header-description">Track your applications and stay updated on your job search progress.</p>
+            </div>
+            <div class="page-header-actions">
+                <a href="{% url 'jobs:job_list' %}" class="btn btn-premium btn-sm px-3">
+                    <i class="fa-solid fa-magnifying-glass me-1.5"></i>Browse Jobs
+                </a>
+            </div>
         </div>
-        <a href="{% url 'jobs:job_list' %}" class="btn btn-premium">Browse Jobs</a>
     </div>
-    <div class="glass-card hover-lift">
-        <div class="table-responsive">
-            <table class="table table-premium align-middle mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Job Title</th>
-                        <th>Status</th>
-                        <th>Applied Date</th>
-                        <th>Resume</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for application in applications %}
+
+    <!-- Summary Cards -->
+    <div class="seeker-metric-grid">
+        <!-- Total Applications -->
+        <div class="seeker-metric-card">
+            <div class="seeker-metric-top">
+                <span class="seeker-metric-num">{{ stats.total }}</span>
+                <span class="seeker-metric-icon bg-light-blue"><i class="fa-solid fa-paper-plane"></i></span>
+            </div>
+            <div class="seeker-metric-lbl">Total Applications</div>
+            <div class="seeker-metric-support">Total submitted</div>
+        </div>
+
+        <!-- Shortlisted -->
+        <div class="seeker-metric-card">
+            <div class="seeker-metric-top">
+                <span class="seeker-metric-num">{{ stats.shortlisted }}</span>
+                <span class="seeker-metric-icon bg-light-green"><i class="fa-solid fa-star"></i></span>
+            </div>
+            <div class="seeker-metric-lbl">Shortlisted</div>
+            <div class="seeker-metric-support">Shortlisted opportunities</div>
+        </div>
+
+        <!-- Pending -->
+        <div class="seeker-metric-card">
+            <div class="seeker-metric-top">
+                <span class="seeker-metric-num">{{ stats.pending }}</span>
+                <span class="seeker-metric-icon bg-light-amber"><i class="fa-solid fa-hourglass-half"></i></span>
+            </div>
+            <div class="seeker-metric-lbl">Pending</div>
+            <div class="seeker-metric-support">Awaiting review</div>
+        </div>
+
+        <!-- Reviewed -->
+        <div class="seeker-metric-card">
+            <div class="seeker-metric-top">
+                <span class="seeker-metric-num">{{ stats.reviewed }}</span>
+                <span class="seeker-metric-icon bg-light-violet"><i class="fa-solid fa-eye"></i></span>
+            </div>
+            <div class="seeker-metric-lbl">Reviewed</div>
+            <div class="seeker-metric-support">Reviewed by recruiters</div>
+        </div>
+    </div>
+
+    <!-- Application List -->
+    {% if applications %}
+        <div class="glass-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-premium align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td>{{ application.job_title }}</td>
-                            <td>
-                                <span class="badge
-                                    {% if application.status == 'Shortlisted' %}text-bg-success
-                                    {% elif application.status == 'Rejected' %}text-bg-danger
-                                    {% elif application.status == 'Reviewed' %}text-bg-info
-                                    {% else %}text-bg-warning{% endif %}">
-                                    {{ application.status }}
-                                </span>
-                            </td>
-                            <td>{{ application.applied_at|localtime|date:"d M Y, h:i A" }}</td>
-                            <td>
-                                <a href="{{ MEDIA_URL }}{{ application.resume }}" target="_blank" class="btn btn-sm btn-outline-dark">View Resume</a>
-                            </td>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Applied On</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
                         </tr>
-                    {% empty %}
-                        <tr><td colspan="4" class="text-center py-4">You have not applied for any jobs yet.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for application in applications %}
+                            <tr>
+                                <td data-label="Job Title">
+                                    <div class="fw-bold text-dark" style="font-size: 0.95rem;">{{ application.job_title }}</div>
+                                </td>
+                                <td data-label="Company">
+                                    <div class="text-secondary small fw-semibold">{{ application.company }}</div>
+                                </td>
+                                <td data-label="Applied On">
+                                    <span class="text-muted small">{{ application.applied_at|localtime|date:"d M Y, h:i A" }}</span>
+                                </td>
+                                <td data-label="Status">
+                                    <span class="badge
+                                        {% if application.status == 'Shortlisted' %}text-bg-success
+                                        {% elif application.status == 'Rejected' %}text-bg-danger
+                                        {% elif application.status == 'Reviewed' %}text-bg-info
+                                        {% else %}text-bg-warning{% endif %}">
+                                        {{ application.status }}
+                                    </span>
+                                </td>
+                                 <td data-label="Actions" class="text-end actions-col">
+                                     <div class="action-group">
+                                         <button class="btn btn-sm btn-premium action-btn portal-dropdown-trigger" 
+                                                 data-dropdown-type="seeker-actions"
+                                                 data-application-id="{{ application.id }}"
+                                                 data-job-title="{{ application.job_title|escapejs }}"
+                                                 data-has-resume="{% if application.resume %}true{% else %}false{% endif %}"
+                                                 data-resume-url="{{ MEDIA_URL }}{{ application.resume }}"
+                                                 data-message-url="{% url 'messages_box:start_conversation' application.job_id %}"
+                                                 data-can-withdraw="{% if application.status == 'Pending' or application.status == 'Reviewed' %}true{% else %}false{% endif %}"
+                                                 aria-haspopup="true" aria-expanded="false" style="font-size: 0.78rem;">
+                                             Actions <i class="fa-solid fa-chevron-down ms-1"></i>
+                                         </button>
+                                     </div>
+                                 </td>
+                             </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="seeker-empty-box">
+            <span class="seeker-empty-icon"><i class="fa-regular fa-folder-open"></i></span>
+            <h3 class="seeker-empty-title">No applications yet</h3>
+            <p class="seeker-empty-desc">Explore available opportunities and apply to jobs that match your skills.</p>
+            <a href="{% url 'jobs:job_list' %}" class="btn btn-premium btn-premium-lg px-4">
+                Explore Jobs
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Withdraw Confirmation Modal -->
+<div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 12px; border: 1px solid var(--portal-border); box-shadow: var(--portal-shadow); background: #ffffff;">
+            <div class="modal-header border-bottom border-light">
+                <h5 class="modal-title fw-bold text-dark" id="withdrawModalLabel">
+                    <i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>Withdraw Application?
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="withdrawForm" method="POST" action="">
+                {% csrf_token %}
+                <div class="modal-body py-4 text-start">
+                    <p class="mb-3 text-dark">
+                        Are you sure you want to withdraw your application for:
+                    </p>
+                    <div class="p-3 mb-3 bg-light rounded border border-light-subtle">
+                        <div class="fw-bold text-dark fs-6" id="withdrawJobTitle"></div>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        <i class="fa-solid fa-circle-info me-1.5 text-accent"></i> The recruiter will be notified of this withdrawal. This action cannot be undone.
+                    </p>
+                </div>
+                <div class="modal-footer border-top border-light py-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm py-2 px-3 fw-bold" style="border-radius: 6px;" data-bs-dismiss="modal">Keep Application</button>
+                    <button type="submit" id="withdrawSubmitBtn" class="btn btn-danger btn-sm py-2 px-3 fw-bold" style="border-radius: 6px;">Withdraw Application</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeDropdown = null;
+    let activeTrigger = null;
+
+    function openWithdrawModal(appId, jobTitle) {
+        document.getElementById('withdrawJobTitle').innerText = jobTitle;
+        
+        let actionUrl = "{% url 'applications:withdraw_application' 'APP_ID_PLACEHOLDER' %}";
+        actionUrl = actionUrl.replace('APP_ID_PLACEHOLDER', appId);
+        
+        document.getElementById('withdrawForm').action = actionUrl;
+        
+        const modal = new bootstrap.Modal(document.getElementById('withdrawModal'));
+        modal.show();
+    }
+
+    document.getElementById('withdrawForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('withdrawSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1.5" role="status" aria-hidden="true"></span>Withdrawing...';
+    });
+
+    function createDropdownMenu() {
+        if (activeDropdown) {
+            activeDropdown.remove();
+        }
+        const menu = document.createElement('div');
+        menu.className = 'portal-dropdown-menu';
+        document.body.appendChild(menu);
+        activeDropdown = menu;
+        return menu;
+    }
+
+    function closeDropdown() {
+        if (activeDropdown) {
+            activeDropdown.remove();
+            activeDropdown = null;
+        }
+        if (activeTrigger) {
+            activeTrigger.classList.remove('open');
+            activeTrigger.setAttribute('aria-expanded', 'false');
+            activeTrigger = null;
+        }
+    }
+
+    function positionDropdown(trigger, menu) {
+        const rect = trigger.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollLeft = window.scrollX || document.documentElement.scrollLeft;
+        
+        let top = rect.bottom + scrollTop;
+        let left = rect.left + scrollLeft;
+        
+        menu.style.top = top + 'px';
+        menu.style.left = left + 'px';
+        menu.classList.add('show');
+        
+        const menuRect = menu.getBoundingClientRect();
+        if (menuRect.right > window.innerWidth) {
+            left = rect.right + scrollLeft - menuRect.width;
+            menu.style.left = left + 'px';
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('.portal-dropdown-trigger');
+        
+        if (trigger) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isOpen = trigger.classList.contains('open');
+            closeDropdown();
+            
+            if (!isOpen) {
+                activeTrigger = trigger;
+                trigger.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+                
+                const menu = createDropdownMenu();
+                const appId = trigger.getAttribute('data-application-id');
+                const jobTitle = trigger.getAttribute('data-job-title');
+                const hasResume = trigger.getAttribute('data-has-resume') === 'true';
+                const resumeUrl = trigger.getAttribute('data-resume-url');
+                const messageUrl = trigger.getAttribute('data-message-url');
+                const canWithdraw = trigger.getAttribute('data-can-withdraw') === 'true';
+                
+                let html = '';
+                
+                if (hasResume) {
+                    html += `
+                        <a class="portal-dropdown-item" href="${resumeUrl}" target="_blank">
+                            <i class="fa-solid fa-eye text-primary"></i> View Resume
+                        </a>
+                    `;
+                } else {
+                    html += `
+                        <button class="portal-dropdown-item disabled" disabled>
+                            <i class="fa-solid fa-file-circle-xmark text-muted"></i> No resume available
+                        </button>
+                    `;
+                }
+                
+                html += `
+                    <a class="portal-dropdown-item" href="${messageUrl}">
+                        <i class="fa-solid fa-comment text-secondary"></i> Message Recruiter
+                    </a>
+                `;
+                
+                if (canWithdraw) {
+                    html += `
+                        <div class="portal-dropdown-divider"></div>
+                        <button class="portal-dropdown-item text-danger" onclick="openWithdrawModal('${appId}', '${jobTitle}')">
+                            <i class="fa-solid fa-xmark text-danger"></i> Withdraw Application
+                        </button>
+                    `;
+                }
+                
+                menu.innerHTML = html;
+                positionDropdown(trigger, menu);
+            }
+            return;
+        }
+        
+        if (activeDropdown && !activeDropdown.contains(e.target)) {
+            closeDropdown();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDropdown();
+        }
+    });
+
+    window.addEventListener('scroll', closeDropdown, true);
+    window.addEventListener('resize', closeDropdown);
+</script>
 {% endblock %}

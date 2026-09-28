@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Authentication Error | CareerConnect{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="glass-card hover-lift p-4 text-center">
+                <h1 class="h3 mb-2 text-danger">Authentication Failed</h1>
+                <p class="text-muted mb-4">
+                    We could not sign you in with Google. This can happen if the login was cancelled, the request timed out, or Google did not share a verified email address.
+                </p>
+                <a href="{% url 'users:login' %}" class="btn btn-premium w-100">Back to Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

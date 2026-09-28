@@ -9,6 +9,7 @@ class EmailOrUsernameModelBackend(ModelBackend):
             username = kwargs.get(UserModel.USERNAME_FIELD)
         if username is None or password is None:
             return None
+        username = username.strip()
         user = UserModel.objects.filter(username__iexact=username).first()
         if not user:
             user = UserModel.objects.filter(email__iexact=username).first()

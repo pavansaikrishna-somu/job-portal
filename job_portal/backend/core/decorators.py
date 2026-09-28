@@ -12,13 +12,18 @@ def role_required(*allowed_roles):
         @login_required
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
+            if request.user.is_superuser or request.user.is_staff:
+                return view_func(request, *args, **kwargs)
             profile = get_user_profile(request.user.id)
             if not profile:
-                messages.error(request, "Profile not found. Please update your profile.")
-                return redirect("users:profile")
+                messages.error(request, "Profile not found. Please complete onboarding.")
+                return redirect("users:onboard")
             if profile.role not in allowed_roles:
-                messages.error(request, "You are not authorized to access this page.")
-                return redirect(get_dashboard_route(profile))
+                import logging
+                logger = logging.getLogger("security")
+                logger.warning("Security event: Cross-role access attempt by user ID %s (role: '%s') to views requiring %s", request.user.id, profile.role, allowed_roles)
+                from django.core.exceptions import PermissionDenied
+                raise PermissionDenied("You do not have access to this resource.")
             request.user_profile = profile
             return view_func(request, *args, **kwargs)
 
@@ -34,8 +39,8 @@ def profile_completion_required(role_label=None):
         def wrapper(request, *args, **kwargs):
             profile = getattr(request, "user_profile", None) or get_user_profile(request.user.id)
             if not profile:
-                messages.error(request, "Profile not found. Please update your profile.")
-                return redirect("users:profile")
+                messages.error(request, "Profile not found. Please complete onboarding.")
+                return redirect("users:onboard")
 
             completion = get_profile_completion(profile)
             if not completion["is_complete"]:

@@ -1,43 +1,214 @@
 {% extends 'base.html' %}
 {% block title %}Contact | CareerConnect{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="glass-card hover-lift p-4">
-                <h1 class="h2 mb-3">Contact Us</h1>
-                <p class="text-secondary">
-                    For project queries, enhancement requests, or support, use the details below.
-                </p>
-                <div class="row g-4 mt-2">
-                    <div class="col-md-6">
-                        <div class="contact-card h-100">
-                            <h5><i class="fa-solid fa-envelope text-primary me-2"></i>Email</h5>
-                            <p class="mb-0">pavansaikrishnasomu29@gmail.com</p>
+<div class="container py-5 fade-in">
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <span class="badge px-3 py-2 rounded-pill mb-3 fw-semibold" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; font-size: 0.8rem; letter-spacing: 0.5px;">CONTACT US</span>
+        <h1 class="display-6 fw-bold text-dark mb-2">Get in Touch</h1>
+        <p class="text-secondary mx-auto mb-0" style="max-width: 620px; font-size: 1.05rem; line-height: 1.6;">
+            Have a question, need support, or want to partner with CareerConnect? We're here to help.
+        </p>
+    </div>
+
+    <!-- Contact Grid -->
+    <div class="row g-4 justify-content-center">
+        <!-- Left Column: Contact Cards -->
+        <div class="col-lg-5 col-md-12">
+            <div class="d-flex flex-column gap-3 h-100">
+                <!-- Email Card -->
+                <div class="card border rounded-4 bg-white p-3 shadow-sm hover-lift">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 44px; height: 44px; border-radius: 10px;">
+                            <i class="fa-solid fa-envelope" style="font-size: 1.1rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Email</h6>
+                            <p class="text-secondary mb-0 small text-break">pavansaikrishnasomu29@gmail.com</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="contact-card h-100">
-                            <h5><i class="fa-solid fa-phone text-primary me-2"></i>Phone</h5>
-                            <p class="mb-0">+91 8688854564</p>
+                </div>
+
+                <!-- Phone Card -->
+                <div class="card border rounded-4 bg-white p-3 shadow-sm hover-lift">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 44px; height: 44px; border-radius: 10px;">
+                            <i class="fa-solid fa-phone" style="font-size: 1.1rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Phone</h6>
+                            <p class="text-secondary mb-0 small">+91 8688854564</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="contact-card">
-                            <h5><i class="fa-solid fa-location-dot text-primary me-2"></i>Address</h5>
-                            <p class="mb-0">Guntur, Andhra Pradesh, India</p>
+                </div>
+
+                <!-- Address Card -->
+                <div class="card border rounded-4 bg-white p-3 shadow-sm hover-lift">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 44px; height: 44px; border-radius: 10px;">
+                            <i class="fa-solid fa-location-dot" style="font-size: 1.1rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Location</h6>
+                            <p class="text-secondary mb-0 small">Guntur, Andhra Pradesh, India</p>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="contact-card">
-                            <h5><i class="fa-solid fa-stopwatch text-primary me-2"></i>Response Time</h5>
-                            <p class="mb-0">Average response within 2 hours</p>
+                </div>
+
+                <!-- Support Hours Card -->
+                <div class="card border rounded-4 bg-white p-3 shadow-sm hover-lift">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="icon-pill flex-shrink-0" style="background-color: rgba(45, 91, 255, 0.08); color: #2d5bff; width: 44px; height: 44px; border-radius: 10px;">
+                            <i class="fa-solid fa-clock" style="font-size: 1.1rem;"></i>
                         </div>
+                        <div>
+                            <h6 class="fw-bold text-dark mb-1">Support Hours</h6>
+                            <p class="text-secondary mb-0 small">Mon - Fri, 9:00 AM - 6:00 PM IST</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Contact Form -->
+        <div class="col-lg-7 col-md-12">
+            <div class="card border rounded-4 shadow-sm p-4 bg-white h-100">
+                <h3 class="fw-bold text-dark mb-3" style="font-size: 1.3rem;">Send Us a Message</h3>
+                
+                <!-- Success Alert -->
+                <div id="contact-success" class="alert alert-success d-none border-0 rounded-3 shadow-sm p-3 mb-4" role="alert" style="background-color: rgba(25, 135, 84, 0.1); color: #198754;">
+                    <div class="d-flex gap-2">
+                        <i class="fa-solid fa-circle-check fs-5 mt-0.5" style="color: #198754;"></i>
+                        <div>
+                            <h6 class="alert-heading fw-bold mb-1" style="color: #145c36;">Message Sent Successfully!</h6>
+                            <p class="mb-0 small text-secondary">Thank you for reaching out. A representative from CareerConnect will respond to your query shortly.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="contact-form" novalidate>
+                    <div class="mb-3">
+                        <label for="contact-name" class="form-label fw-semibold small text-dark">Full Name</label>
+                        <input type="text" id="contact-name" class="form-control" placeholder="John Doe" required style="border-radius: 8px; font-size: 0.9rem;">
+                        <div class="invalid-feedback">Please enter your full name (minimum 2 characters).</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact-email" class="form-label fw-semibold small text-dark">Email Address</label>
+                        <input type="email" id="contact-email" class="form-control" placeholder="john@example.com" required style="border-radius: 8px; font-size: 0.9rem;">
+                        <div class="invalid-feedback">Please enter a valid email address.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact-subject" class="form-label fw-semibold small text-dark">Subject</label>
+                        <input type="text" id="contact-subject" class="form-control" placeholder="How can we help?" required style="border-radius: 8px; font-size: 0.9rem;">
+                        <div class="invalid-feedback">Please provide a subject for your message.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact-message" class="form-label fw-semibold small text-dark">Message</label>
+                        <textarea id="contact-message" class="form-control" rows="5" placeholder="Enter your message details..." required style="border-radius: 8px; font-size: 0.9rem; resize: none;"></textarea>
+                        <div class="invalid-feedback">Please enter your message (minimum 10 characters).</div>
                     </div>
                     
-                </div>
+                    <button type="submit" class="btn btn-primary px-4 py-2.5 fw-semibold rounded-3 hover-lift w-100" style="font-size: 0.95rem;">
+                        <i class="fa-solid fa-paper-plane me-2"></i>Send Message
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('contact-form');
+    const successAlert = document.getElementById('contact-success');
+    
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        
+        let isValid = true;
+        
+        const nameInput = document.getElementById('contact-name');
+        const emailInput = document.getElementById('contact-email');
+        const subjectInput = document.getElementById('contact-subject');
+        const messageInput = document.getElementById('contact-message');
+        
+        // Name validation
+        if (nameInput.value.trim().length < 2) {
+            nameInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            nameInput.classList.remove('is-invalid');
+            nameInput.classList.add('is-valid');
+        }
+        
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailInput.value.trim())) {
+            emailInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            emailInput.classList.remove('is-invalid');
+            emailInput.classList.add('is-valid');
+        }
+        
+        // Subject validation
+        if (subjectInput.value.trim() === '') {
+            subjectInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            subjectInput.classList.remove('is-invalid');
+            subjectInput.classList.add('is-valid');
+        }
+        
+        // Message validation
+        if (messageInput.value.trim().length < 10) {
+            messageInput.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            messageInput.classList.remove('is-invalid');
+            messageInput.classList.add('is-valid');
+        }
+        
+        if (isValid) {
+            // Show success message
+            successAlert.classList.remove('d-none');
+            
+            // Reset form elements
+            form.reset();
+            
+            // Remove validation styling
+            nameInput.classList.remove('is-valid');
+            emailInput.classList.remove('is-valid');
+            subjectInput.classList.remove('is-valid');
+            messageInput.classList.remove('is-valid');
+            
+            // Scroll to success message
+            successAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Auto-dismiss success alert after 8 seconds
+            setTimeout(() => {
+                successAlert.classList.add('d-none');
+            }, 8000);
+        }
+    });
+    
+    // Clear validation state on input change
+    const inputs = [
+        document.getElementById('contact-name'),
+        document.getElementById('contact-email'),
+        document.getElementById('contact-subject'),
+        document.getElementById('contact-message')
+    ];
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                this.classList.remove('is-invalid');
+                this.classList.remove('is-valid');
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

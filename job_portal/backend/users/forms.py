@@ -6,6 +6,25 @@ from users.documents import UserProfile
 from users.services import get_user_profile
 
 
+import re
+from django.core.exceptions import ValidationError
+
+def validate_strong_password(password):
+    errors = []
+    if len(password) < 8:
+        errors.append("Password must be at least 8 characters long.")
+    if not re.search(r"[A-Z]", password):
+        errors.append("Password must contain at least one uppercase letter.")
+    if not re.search(r"[a-z]", password):
+        errors.append("Password must contain at least one lowercase letter.")
+    if not re.search(r"\d", password):
+        errors.append("Password must contain at least one digit.")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        errors.append("Password must contain at least one special character.")
+    if errors:
+        raise ValidationError(errors)
+
+
 class RegisterForm(forms.Form):
     ROLE_CHOICES = [("jobseeker", "Job Seeker"), ("recruiter", "Recruiter")]
 
@@ -13,16 +32,19 @@ class RegisterForm(forms.Form):
     email = forms.EmailField()
     phone = forms.CharField(max_length=20, required=False)
     role = forms.ChoiceField(choices=ROLE_CHOICES)
-    skills = forms.CharField(required=False, help_text="Comma-separated, e.g. Python, Django, React")
-    company_name = forms.CharField(max_length=150, required=False)
-    profile_image = forms.FileField(required=False)
     password = forms.CharField(widget=forms.PasswordInput)
     confirm_password = forms.CharField(widget=forms.PasswordInput)
 
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        if password:
+            validate_strong_password(password)
+        return password
+
     def clean_email(self):
-        email = self.cleaned_data["email"].lower()
+        email = self.cleaned_data["email"].strip().lower()
         user_model = get_user_model()
-        if user_model.objects.filter(email__iexact=email).exists():
+        if user_model.objects.filter(email__iexact=email).exists() or user_model.objects.filter(username__iexact=email).exists():
             raise forms.ValidationError("An account with this email already exists.")
         if UserProfile.objects(email=email).first():
             raise forms.ValidationError("A profile with this email already exists.")
@@ -33,12 +55,11 @@ class RegisterForm(forms.Form):
         password = cleaned.get("password")
         confirm_password = cleaned.get("confirm_password")
         role = cleaned.get("role")
-        company_name = cleaned.get("company_name")
 
         if password and confirm_password and password != confirm_password:
             self.add_error("confirm_password", "Passwords do not match.")
-        if role == "recruiter" and not company_name:
-            self.add_error("company_name", "Company name is required for recruiters.")
+        if role not in ("jobseeker", "recruiter"):
+            self.add_error("role", "Invalid role selected.")
         return cleaned
 
     def save(self):
@@ -49,29 +70,34 @@ class RegisterForm(forms.Form):
             email=email,
             first_name=self.cleaned_data["name"],
             password=self.cleaned_data["password"],
+            is_active=False,
         )
-        profile_image_path = ""
-        if self.cleaned_data.get("profile_image"):
-            profile_image_path = save_uploaded_file(self.cleaned_data["profile_image"], "profiles")
+        user.is_staff = False
+        user.is_superuser = False
+        user.save()
 
-        profile = UserProfile(
-            auth_user_id=user.id,
-            name=self.cleaned_data["name"],
-            email=email,
-            password=user.password,
-            role=self.cleaned_data["role"],
-            phone=self.cleaned_data.get("phone", ""),
-            skills=parse_csv(self.cleaned_data.get("skills", "")),
-            company_name=self.cleaned_data.get("company_name", ""),
-            company_email=email if self.cleaned_data["role"] == "recruiter" else None,
-            profile_image=profile_image_path,
-        )
-        profile.save()
+        try:
+            profile = UserProfile(
+                auth_user_id=user.id,
+                name=self.cleaned_data["name"],
+                email=email,
+                password=user.password,
+                role=self.cleaned_data["role"],
+                phone=self.cleaned_data.get("phone", ""),
+                skills=[],
+                company_name="",
+                company_email=email if self.cleaned_data["role"] == "recruiter" else None,
+                profile_image="",
+            )
+            profile.save()
+        except Exception:
+            user.delete()
+            raise
         return user, profile
 
 
 class LoginForm(forms.Form):
-    email = forms.EmailField(label="Email")
+    email = forms.CharField(label="Email or Username")
     password = forms.CharField(widget=forms.PasswordInput)
 
 
@@ -239,3 +265,14 @@ class RecruiterProfileForm(BaseProfileForm):
         profile.save()
         self.sync_user(profile)
         return profile
+
+
+class ResendVerificationForm(forms.Form):
+    email = forms.EmailField(label="Email Address")
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].lower()
+        UserModel = get_user_model()
+        if not UserModel.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("No account was found with that email address.")
+        return email

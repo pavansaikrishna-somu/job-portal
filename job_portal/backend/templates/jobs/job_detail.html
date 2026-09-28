@@ -1,53 +1,236 @@
 {% extends 'base.html' %}
 {% block title %}{{ job.title }} | CareerConnect{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Compact Job Details Spacing overrides */
+    .seeker-header {
+        background: var(--portal-card);
+        border: 1px solid var(--portal-border);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        box-shadow: var(--portal-shadow);
+    }
+    .overview-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.65rem 0;
+        border-bottom: 1px solid var(--portal-border);
+    }
+    .overview-item:last-child {
+        border-bottom: none;
+    }
+    .overview-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--portal-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .overview-value {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--portal-secondary);
+    }
+    .skill-chip {
+        font-size: 0.82rem;
+        font-weight: 600;
+        border-radius: 6px;
+        padding: 0.4rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+    .skill-chip:hover {
+        background-color: var(--portal-border) !important;
+    }
+    @media (min-width: 992px) {
+        .job-sticky-sidebar {
+            position: sticky;
+            top: 90px;
+            z-index: 10;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="glass-card hover-lift p-4 p-lg-5">
-                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-                    <div>
-                        <p class="text-uppercase small text-muted mb-2">{{ job.company }}</p>
-                        <h1 class="h3 mb-3">{{ job.title }}</h1>
-                        <div class="d-flex flex-wrap gap-2">
-                            <span class="badge text-bg-light border"><i class="fa-solid fa-location-dot me-1"></i>{{ job.location }}</span>
-                            <span class="badge text-bg-light border"><i class="fa-solid fa-briefcase me-1"></i>{{ job.experience }}</span>
-                            <span class="badge text-bg-light border"><i class="fa-solid fa-money-bill-wave me-1"></i>{{ job.salary }}</span>
-                        </div>
+<div class="container mt-2 mb-5">
+    <!-- Compact Job Header -->
+    <div class="seeker-header mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div class="flex-grow-1">
+                <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.85rem; letter-spacing: 0.5px;">{{ job.company }}</span>
+                <h1 class="mb-2" style="font-size: 1.85rem; font-weight: 800; color: var(--portal-secondary); line-height: 1.2;">{{ job.title }}</h1>
+                <p class="mb-2 d-flex flex-wrap align-items-center gap-3 text-muted" style="font-size: 0.88rem; font-weight: 500;">
+                    <span><i class="fa-solid fa-location-dot text-primary me-1.5"></i>{{ job.location }}</span>
+                    <span><i class="fa-solid fa-briefcase text-accent me-1.5"></i>{{ job.experience }}</span>
+                    <span><i class="fa-solid fa-clock text-muted me-1.5"></i>Full-time</span>
+                    <span><i class="fa-solid fa-calendar text-muted me-1.5"></i>Posted {{ job.created_at|date:"d M Y" }}</span>
+                </p>
+                {% if job.salary %}
+                    <div class="fw-bold text-success mb-0" style="font-size: 1.1rem; font-family: 'Poppins', sans-serif;">
+                        <i class="fa-solid fa-money-bill-wave me-1.5"></i>{{ job.salary }}
                     </div>
-                    <div class="company-logo">
-                        <i class="fa-solid fa-building"></i>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Actions Row directly below header context -->
+        <div class="d-flex flex-wrap gap-2 mt-3 pt-3 border-top border-light-subtle">
+            {% if user.is_authenticated and current_user_profile and current_user_profile.role == 'jobseeker' %}
+                {% if already_applied %}
+                    <button class="btn btn-success btn-sm px-4 py-2" disabled>
+                        <i class="fa-solid fa-circle-check me-1.5"></i>Already Applied
+                    </button>
+                {% else %}
+                    <a href="{% url 'applications:apply_job' job.id %}" class="btn btn-premium btn-sm px-4 py-2">
+                        <i class="fa-solid fa-paper-plane me-1.5"></i>Apply Now
+                    </a>
+                {% endif %}
+                <a href="{% url 'messages_box:start_conversation' job.id %}" class="btn btn-outline-primary btn-sm px-4 py-2">
+                    <i class="fa-solid fa-message me-1.5"></i>Message Recruiter
+                </a>
+            {% elif not user.is_authenticated %}
+                <a href="{% url 'users:login' %}" class="btn btn-premium btn-sm px-4 py-2">
+                    <i class="fa-solid fa-right-to-bracket me-1.5"></i>Login to Apply
+                </a>
+            {% endif %}
+            <a href="{% url 'jobs:job_list' %}" class="btn btn-outline-dark btn-sm px-3 py-2">
+                <i class="fa-solid fa-arrow-left me-1.5"></i>Back to Jobs
+            </a>
+        </div>
+    </div>
+
+    <!-- Mobile Job Overview Duplicate (Header -> Actions -> Job Overview -> About the Role...) -->
+    <div class="d-block d-lg-none mb-4">
+        <div class="glass-card p-4">
+            <h2 class="h6 fw-bold text-dark mb-3"><i class="fa-solid fa-circle-info text-primary me-2"></i>Job Overview</h2>
+            <div class="d-flex flex-column">
+                <div class="overview-item">
+                    <span class="overview-label">Company</span>
+                    <span class="overview-value">{{ job.company }}</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Location</span>
+                    <span class="overview-value">{{ job.location }}</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Job Type</span>
+                    <span class="overview-value">Full-time</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Experience</span>
+                    <span class="overview-value">{{ job.experience }}</span>
+                </div>
+                {% if job.salary %}
+                <div class="overview-item">
+                    <span class="overview-label">Salary</span>
+                    <span class="overview-value text-success fw-bold">{{ job.salary }}</span>
+                </div>
+                {% endif %}
+                <div class="overview-item">
+                    <span class="overview-label">Posted</span>
+                    <span class="overview-value">{{ job.created_at|date:"d M Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+        <!-- Main Column (Left - approx 70%) -->
+        <div class="col-lg-8">
+            <!-- Unified Left Card for content -->
+            <div class="glass-card p-4">
+                <!-- About the Role -->
+                <div class="mb-4">
+                    <h2 class="h5 fw-bold text-dark mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i>About the Role</h2>
+                    <div class="text-secondary lh-relaxed" style="font-size: 0.95rem; font-weight: 500;">
+                        {{ job.description|linebreaks }}
                     </div>
                 </div>
-                <div class="row g-4">
-                    <div class="col-lg-8">
-                        <h5>Role Overview</h5>
-                        <p class="text-secondary">{{ job.description }}</p>
-                        <h6 class="mt-4">Skills Required</h6>
-                        <div class="d-flex flex-wrap gap-2">
-                            {% for skill in job.skills_required %}
-                                <span class="badge text-bg-light border">{{ skill }}</span>
-                            {% endfor %}
+
+                <hr class="my-4 text-muted opacity-25">
+
+                <!-- Required Skills -->
+                <div>
+                    <h2 class="h5 fw-bold text-dark mb-3"><i class="fa-solid fa-tags text-accent me-2"></i>Required Skills</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for skill in job.skills_required %}
+                            <span class="badge text-bg-light border skill-chip" style="color: var(--portal-secondary); font-size: 0.82rem; font-weight: 600; border-radius: 6px; padding: 0.4rem 0.75rem;">{{ skill }}</span>
+                        {% empty %}
+                            <span class="text-muted small">No specific skills listed.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Column (Right - approx 30% - Sticky on Desktop) -->
+        <div class="col-lg-4">
+            <div class="job-sticky-sidebar">
+                
+                <!-- Desktop Job Overview Card -->
+                <div class="glass-card p-4 mb-4 d-none d-lg-block">
+                    <h2 class="h6 fw-bold text-dark mb-3"><i class="fa-solid fa-circle-info text-primary me-2"></i>Job Overview</h2>
+                    <div class="d-flex flex-column">
+                        <div class="overview-item">
+                            <span class="overview-label">Company</span>
+                            <span class="overview-value">{{ job.company }}</span>
+                        </div>
+                        <div class="overview-item">
+                            <span class="overview-label">Location</span>
+                            <span class="overview-value">{{ job.location }}</span>
+                        </div>
+                        <div class="overview-item">
+                            <span class="overview-label">Job Type</span>
+                            <span class="overview-value">Full-time</span>
+                        </div>
+                        <div class="overview-item">
+                            <span class="overview-label">Experience</span>
+                            <span class="overview-value">{{ job.experience }}</span>
+                        </div>
+                        {% if job.salary %}
+                        <div class="overview-item">
+                            <span class="overview-label">Salary</span>
+                            <span class="overview-value text-success fw-bold">{{ job.salary }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="overview-item">
+                            <span class="overview-label">Posted</span>
+                            <span class="overview-value">{{ job.created_at|date:"d M Y" }}</span>
                         </div>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="glass-card hover-lift p-4">
-                            <h6 class="text-uppercase text-muted">Hiring Lead</h6>
-                            <p class="fw-semibold mb-3">{{ job.recruiter_name }}</p>
-                            <div class="d-grid gap-2">
-                                {% if user.is_authenticated and current_user_profile and current_user_profile.role == 'jobseeker' %}
-                                    {% if already_applied %}
-                                        <button class="btn btn-success" disabled>Already Applied</button>
-                                    {% else %}
-                                        <a href="{% url 'applications:apply_job' job.id %}" class="btn btn-premium">Apply Now</a>
-                                    {% endif %}
-                                {% elif not user.is_authenticated %}
-                                    <a href="{% url 'users:login' %}" class="btn btn-premium">Login to Apply</a>
-                                {% endif %}
-                                <a href="{% url 'jobs:job_list' %}" class="btn btn-outline-dark">Back to Jobs</a>
-                            </div>
+                </div>
+
+                <!-- Desktop Hiring Lead Card -->
+                <div class="glass-card p-4 d-none d-lg-block">
+                    <h2 class="h6 fw-bold text-dark mb-3"><i class="fa-regular fa-id-card text-accent me-2"></i>Hiring Lead</h2>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 1.1rem; border: 1px solid var(--portal-border);">
+                            {{ job.recruiter_name|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark" style="font-size: 0.95rem;">{{ job.recruiter_name }}</div>
+                            <div class="text-muted small" style="font-size: 0.78rem;">Recruitment Manager</div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Hiring Lead Card (Header -> Actions -> Job Overview -> About the Role -> Skills -> Hiring Lead) -->
+    <div class="d-block d-lg-none mt-4">
+        <div class="glass-card p-4">
+            <h2 class="h6 fw-bold text-dark mb-3"><i class="fa-regular fa-id-card text-accent me-2"></i>Hiring Lead</h2>
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 44px; height: 44px; font-size: 1.1rem; border: 1px solid var(--portal-border);">
+                    {{ job.recruiter_name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <div class="fw-bold text-dark" style="font-size: 0.95rem;">{{ job.recruiter_name }}</div>
+                    <div class="text-muted small" style="font-size: 0.78rem;">Recruitment Manager</div>
                 </div>
             </div>
         </div>

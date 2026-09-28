@@ -10,7 +10,15 @@ def get_dashboard_route(profile):
         return "core:home"
     if profile.role == "recruiter":
         return "core:recruiter_dashboard"
-    return "core:jobseeker_dashboard"
+    if profile.role == "jobseeker":
+        return "core:jobseeker_dashboard"
+    
+    # In case of corrupt/invalid role
+    import logging
+    logger = logging.getLogger("security")
+    logger.warning("Security event: Corrupt/invalid role '%s' detected for user ID %s", profile.role, profile.auth_user_id)
+    from django.core.exceptions import PermissionDenied
+    raise PermissionDenied("Invalid account configuration.")
 
 
 def get_profile_completion(profile):

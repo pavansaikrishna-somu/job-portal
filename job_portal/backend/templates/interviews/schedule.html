@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Schedule Interview | CareerConnect{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="glass-card p-4 p-lg-5 shadow">
+                <h1 class="h3 mb-1">Schedule Interview</h1>
+                <p class="text-muted mb-4">Set up an interview with <strong>{{ application.applicant_name }}</strong> for the role of <strong>{{ application.job_title }}</strong>.</p>
+                
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label fw-semibold text-dark">Interview Title</label>
+                        <input type="text" class="form-control" id="title" name="title" placeholder="e.g. Technical Interview" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date" class="form-label fw-semibold text-dark">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="start_time" class="form-label fw-semibold text-dark">Start Time</label>
+                            <input type="time" class="form-control" id="start_time" name="start_time" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="duration" class="form-label fw-semibold text-dark">Duration (Minutes)</label>
+                            <input type="number" class="form-control" id="duration" name="duration" placeholder="e.g. 45" min="1" max="1440" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="timezone" class="form-label fw-semibold text-dark">Timezone</label>
+                            <select class="form-select" id="timezone" name="timezone">
+                                <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
+                                <option value="UTC">UTC</option>
+                                <option value="America/New_York">America/New_York (EST)</option>
+                                <option value="Europe/London">Europe/London (GMT)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="notes" class="form-label fw-semibold text-dark">Notes (Optional)</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Add preparation notes, agenda, etc."></textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between gap-3">
+                        <a href="{% url 'applications:applicants' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Schedule</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

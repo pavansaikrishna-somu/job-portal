@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Reschedule Interview | CareerConnect{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="glass-card p-4 p-lg-5 shadow">
+                <h1 class="h3 mb-1">Reschedule Interview</h1>
+                <p class="text-muted mb-4">Update interview schedule with <strong>{{ application.applicant_name }}</strong> for the role of <strong>{{ application.job_title }}</strong>.</p>
+                
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">Interview Title</label>
+                        <input type="text" class="form-control bg-light" value="{{ interview.title }}" readonly disabled>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date" class="form-label fw-semibold text-dark">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" value="{{ interview.interview_date|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="start_time" class="form-label fw-semibold text-dark">Start Time</label>
+                            <input type="time" class="form-control" id="start_time" name="start_time" value="{{ interview.start_time }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="duration" class="form-label fw-semibold text-dark">Duration (Minutes)</label>
+                            <input type="number" class="form-control" id="duration" name="duration" value="{{ interview.duration }}" min="1" max="1440" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="timezone" class="form-label fw-semibold text-dark">Timezone</label>
+                            <select class="form-select" id="timezone" name="timezone">
+                                <option value="Asia/Kolkata" {% if interview.timezone == 'Asia/Kolkata' %}selected{% endif %}>Asia/Kolkata (IST)</option>
+                                <option value="UTC" {% if interview.timezone == 'UTC' %}selected{% endif %}>UTC</option>
+                                <option value="America/New_York" {% if interview.timezone == 'America/New_York' %}selected{% endif %}>America/New_York (EST)</option>
+                                <option value="Europe/London" {% if interview.timezone == 'Europe/London' %}selected{% endif %}>Europe/London (GMT)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="notes" class="form-label fw-semibold text-dark">Notes (Optional)</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Add preparation notes, agenda, etc.">{{ interview.notes }}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between gap-3">
+                        <a href="{% url 'interviews:view_interview' interview.id %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
