@@ -2,3 +2,4 @@ mongodb_data/
 .venv/
 job_portal/backend/.env
 job_portal/backend/db.sqlite3
+*.zip
