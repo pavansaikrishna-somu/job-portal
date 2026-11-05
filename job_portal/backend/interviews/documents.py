@@ -21,6 +21,7 @@ class Interview(Document):
     meeting_url = StringField(default="")
     meeting_id = StringField(default="")
     meeting_start_url = StringField(default="")
+    meeting_password = StringField(default="")
     
     created_at = DateTimeField(default=django_timezone.now)
     updated_at = DateTimeField(default=django_timezone.now)

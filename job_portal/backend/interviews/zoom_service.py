@@ -60,7 +60,8 @@ def create_zoom_meeting(interview):
         return {
             "id": "1234567890",
             "join_url": "https://zoom.us/j/1234567890",
-            "start_url": "https://zoom.us/s/1234567890"
+            "start_url": "https://zoom.us/s/1234567890",
+            "password": "CcPass321"
         }
     
     url = "https://api.zoom.us/v2/users/me/meetings"
@@ -96,7 +97,8 @@ def create_zoom_meeting(interview):
             return {
                 "id": str(data.get("id")),
                 "join_url": data.get("join_url"),
-                "start_url": data.get("start_url")
+                "start_url": data.get("start_url"),
+                "password": data.get("password", "")
             }
     except Exception as e:
         logger.error("Failed to create Zoom meeting for interview %s: %s", str(interview.id), str(e))

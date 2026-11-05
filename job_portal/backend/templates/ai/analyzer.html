@@ -4,43 +4,50 @@
 {% block extra_css %}
 <style>
     .analyzer-container {
-        padding: 2.5rem 0 4rem;
+        padding: 2rem 0 3.5rem;
     }
     
     .analyzer-header {
-        background: linear-gradient(120deg, var(--portal-secondary), #1e293b);
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         color: #ffffff;
-        border-radius: 1.4rem;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        border: 1px solid var(--portal-border);
+        border-radius: 1rem;
+        padding: 1.75rem;
+        margin-bottom: 1.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: var(--portal-shadow);
-        position: relative;
-        overflow: hidden;
     }
-    
-    .analyzer-header-bg {
-        position: absolute;
-        inset: 0 0 0 0;
-        background: radial-gradient(circle at right top, rgba(124, 58, 237, 0.18), transparent 45%);
-        pointer-events: none;
+
+    .meta-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .meta-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.85);
     }
 
     .score-radial {
-        width: 150px;
-        height: 150px;
+        width: 130px;
+        height: 130px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 1.2rem;
+        margin: 0 auto 1rem;
         position: relative;
-        box-shadow: 0 10px 25px rgba(45, 91, 255, 0.15);
     }
     
     .score-radial-inner {
-        width: 130px;
-        height: 130px;
+        width: 110px;
+        height: 110px;
         border-radius: 50%;
         background: #ffffff;
         display: flex;
@@ -51,35 +58,86 @@
     
     .score-val {
         font-family: 'Poppins', sans-serif;
-        font-size: 2.6rem;
+        font-size: 2.3rem;
         font-weight: 800;
         color: var(--portal-secondary);
         line-height: 1;
     }
     
     .score-lbl {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         color: var(--portal-muted);
         text-transform: uppercase;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 0.5px;
-        margin-top: 2px;
     }
-    
-    .ats-bar-container {
-        background: rgba(148, 163, 184, 0.15);
-        border-radius: 999px;
-        height: 12px;
-        overflow: hidden;
-        margin: 0.8rem 0;
-    }
-    
-    .ats-bar {
-        background: linear-gradient(90deg, var(--portal-accent), var(--portal-primary));
+
+    .rubric-card {
+        background: #f8fafc;
+        border: 1px solid var(--portal-border);
+        border-radius: 0.85rem;
+        padding: 1rem;
         height: 100%;
-        border-radius: 999px;
+        transition: transform 0.2s ease;
     }
-    
+
+    .rubric-progress {
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.2);
+        overflow: hidden;
+        margin: 0.5rem 0;
+    }
+
+    .evidence-quote {
+        background: #f1f5f9;
+        border-left: 3px solid var(--portal-primary);
+        padding: 0.5rem 0.75rem;
+        font-size: 0.82rem;
+        font-style: italic;
+        color: #334155;
+        border-radius: 0 0.4rem 0.4rem 0;
+        margin-top: 0.4rem;
+    }
+
+    .analyzer-card {
+        background: var(--portal-card);
+        border-radius: 1rem;
+        border: 1px solid var(--portal-border);
+        box-shadow: var(--portal-shadow);
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .analyzer-card h3 {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--portal-secondary);
+    }
+
+    .badge-pill-soft {
+        background: rgba(45, 91, 255, 0.08);
+        color: var(--portal-primary);
+        border-radius: 999px;
+        padding: 0.35rem 0.8rem;
+        font-weight: 600;
+        font-size: 0.82rem;
+        display: inline-block;
+    }
+
+    .badge-matched {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .badge-missing {
+        background: rgba(239, 68, 68, 0.08);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
     .strength-card {
         border-left: 4px solid #10b981 !important;
     }
@@ -87,295 +145,465 @@
     .weakness-card {
         border-left: 4px solid #f43f5e !important;
     }
-    
-    .analyzer-card {
-        background: var(--portal-card);
-        border-radius: 1.2rem;
-        border: 1px solid var(--portal-border);
-        box-shadow: var(--portal-shadow);
-        padding: 1.75rem;
-        height: 100%;
+
+    .matched-card {
+        border-left: 4px solid #059669 !important;
     }
 
-    .analyzer-card h3 {
-        font-weight: 600;
-        margin-bottom: 1.25rem;
-        color: var(--portal-secondary);
-    }
-    
-    .badge-role {
-        background: rgba(124, 58, 237, 0.1);
-        color: var(--portal-accent);
-        border-radius: 999px;
-        padding: 0.4rem 0.9rem;
-        font-weight: 600;
-        font-size: 0.85rem;
-        display: inline-block;
-        margin: 0.2rem;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: var(--portal-card);
-        border: 1px solid var(--portal-border);
-        border-radius: 1.4rem;
-        box-shadow: var(--portal-shadow);
-    }
-    
-    .empty-icon {
-        width: 80px;
-        height: 80px;
-        background: rgba(45, 91, 255, 0.1);
-        color: var(--portal-primary);
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        margin-bottom: 1.5rem;
+    .missing-card {
+        border-left: 4px solid #dc2626 !important;
     }
 
-    .meta-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .meta-list li {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.8);
-    }
-
-    .meta-list i {
-        color: var(--portal-highlight);
-    }
-
-    .list-bullets {
-        padding-left: 1.2rem;
-        margin: 0;
-    }
-
-    .list-bullets li {
-        margin-bottom: 0.6rem;
-        color: var(--portal-ink);
-        font-weight: 500;
-    }
-
-    .list-bullets li::marker {
-        color: var(--portal-primary);
+    .rubric-disclaimer {
+        font-size: 0.78rem;
+        color: #64748b;
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 0.5rem;
+        padding: 0.6rem 0.9rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container analyzer-container">
-    <!-- Back Button -->
-    <div class="d-flex align-items-center mb-4">
-        <a href="{% url 'users:profile' %}" class="btn btn-outline-dark">
-            <i class="fa-solid fa-arrow-left me-2"></i>Back to Profile
+    <!-- Back to Profile -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="{% url 'users:profile' %}" class="btn btn-sm btn-outline-dark">
+            <i class="fa-solid fa-arrow-left me-1"></i>Back to Profile
         </a>
+        <div class="d-flex gap-2">
+            {% if profile.resume %}
+                <a href="/media/{{ profile.resume }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="fa-solid fa-file-pdf me-1"></i>View Resume
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#replaceResumeModal">
+                    <i class="fa-solid fa-upload me-1"></i>Replace Resume
+                </button>
+            {% endif %}
+        </div>
     </div>
 
-    <!-- Error Alert -->
-    <div id="ai-error-container" class="alert alert-danger" style="display: none;"></div>
+    <!-- Error Alert with Retry -->
+    <div id="ai-error-container" class="alert alert-danger shadow-sm mb-4" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center">
+            <div id="ai-error-message"></div>
+            <button type="button" class="btn btn-sm btn-outline-danger ms-3" id="btn-retry">
+                <i class="fa-solid fa-rotate-right me-1"></i>Retry
+            </button>
+        </div>
+    </div>
 
     <!-- Loading State -->
     <div id="ai-loading-container" class="analyzer-card text-center p-5 mb-4" style="display: none;">
-        <i class="fa-solid fa-spinner fa-spin fa-3x text-primary mb-3"></i>
-        <h3 class="h5">Analyzing your resume with AI...</h3>
-        <p class="text-muted mb-0">Our AI is scanning your resume structure, estimating ATS fit, and drafting suggestions. Please hold on.</p>
+        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h3 class="h5 fw-bold text-dark mb-2">Analyzing Resume with Evidence Audit...</h3>
+        <p class="text-muted small mb-0 mx-auto" style="max-width: 500px;">
+            Extracting text facts, cross-referencing claims against resume excerpts, and computing documented rubric components.
+        </p>
     </div>
 
-    <!-- Content Screen -->
+    <!-- Main Content Screen -->
     <div id="ai-content-screen">
+        <!-- Target Job Selection & Control Bar -->
+        <div class="card shadow-sm border-0 mb-4 text-dark">
+            <div class="card-body p-3 p-md-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label for="target-job-select" class="form-label small fw-bold text-secondary mb-1">
+                            <i class="fa-solid fa-bullseye text-primary me-1"></i>Target Job Evaluation (Optional)
+                        </label>
+                        <select class="form-select form-select-sm" id="target-job-select">
+                            <option value="">General Resume Audit (No specific job)</option>
+                            {% for job in available_jobs %}
+                                <option value="{{ job.id }}" {% if analysis and analysis.target_job_id == job.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ job.title }} at {{ job.company }}
+                                </option>
+                            {% endfor %}
+                            <option value="custom" {% if analysis and analysis.has_target_job and not analysis.target_job_id %}selected{% endif %}>Custom Job Description...</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div class="small text-muted mb-1">
+                            Current Resume: <strong class="text-dark">{{ profile.resume|default:"None"|cut:"resumes/" }}</strong>
+                        </div>
+                        <div class="small text-muted">
+                            Status: 
+                            {% if profile.resume %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Ready to Audit</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Resume Missing</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 text-md-end">
+                        {% if profile.resume %}
+                            <button id="btn-reanalyze" class="btn btn-sm btn-primary w-100 py-2 fw-semibold">
+                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i>{% if analysis %}Re-analyze{% else %}Analyze{% endif %}
+                            </button>
+                        {% else %}
+                            <button class="btn btn-sm btn-secondary w-100 py-2" data-bs-toggle="modal" data-bs-target="#replaceResumeModal">
+                                Upload Resume
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Custom Job Description Textarea (Collapsible) -->
+                <div id="custom-job-box" class="mt-3 pt-3 border-top" style="display: {% if analysis and analysis.has_target_job and not analysis.target_job_id %}block{% else %}none{% endif %};">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <input type="text" id="custom-job-title" class="form-control form-control-sm" placeholder="Target Job Title (e.g. Senior Backend Engineer)" value="{{ analysis.target_job_title|default:'' }}">
+                        </div>
+                        <div class="col-md-8">
+                            <textarea id="custom-job-desc" class="form-control form-control-sm" rows="3" placeholder="Paste target job requirements and qualifications here for matched/missing analysis..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {% if analysis %}
-            <!-- Header Card -->
+            <!-- Header Summary Banner -->
             <div class="analyzer-header">
-                <div class="analyzer-header-bg"></div>
-                <div class="position-relative d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                     <div>
-                        <span class="badge bg-primary mb-2">AI Engine Active</span>
-                        <h1 class="h3 mb-2 text-white">AI Resume Analysis Report</h1>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary">Evidence-Based Audit</span>
+                            {% if analysis.has_target_job %}
+                                <span class="badge bg-info text-dark">Targeted: {{ analysis.target_job_title }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">General Evaluation</span>
+                            {% endif %}
+                        </div>
+                        <h2 class="h4 mb-2 text-white">Resume Evaluation Report</h2>
                         <ul class="meta-list">
                             <li>
-                                <i class="fa-solid fa-file-pdf"></i>
-                                <span>Analyzed File: <strong>{{ analysis.resume_path|default:""|cut:"resumes/" }}</strong></span>
+                                <i class="fa-solid fa-file-lines"></i>
+                                <span>File: <strong>{{ analysis.resume_path|cut:"resumes/" }}</strong></span>
                             </li>
                             <li>
-                                <i class="fa-solid fa-calendar-check"></i>
-                                <span>Analyzed On: <strong>{{ analysis.created_at|date:"M d, Y H:i" }}</strong></span>
+                                <i class="fa-solid fa-clock"></i>
+                                <span>Audited: <strong>{{ analysis.created_at|date:"M d, Y H:i" }}</strong></span>
                             </li>
                         </ul>
-                    </div>
-                    <div>
-                        <button id="btn-reanalyze" class="btn btn-premium btn-premium-lg">
-                            <i class="fa-solid fa-rotate me-2"></i>Re-analyze Resume
-                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Resume Changed Notification -->
+            <!-- Resume Changed Alert -->
             {% if resume_changed %}
                 <div class="alert alert-warning d-flex align-items-center gap-3 mb-4" role="alert">
                     <i class="fa-solid fa-triangle-exclamation fa-lg text-warning"></i>
                     <div>
-                        <strong>Resume update detected!</strong> Your profile resume has changed since the last analysis. Click <strong>Re-analyze Resume</strong> above to refresh.
+                        <strong>Resume update detected!</strong> Your uploaded resume changed since this report was generated. Click <strong>Re-analyze</strong> to run an updated audit.
                     </div>
                 </div>
             {% endif %}
 
-            <!-- Row 1: Scores Grid -->
-            <div class="row g-4 mb-4">
-                <!-- Overall Score -->
-                <div class="col-md-6">
-                    <div class="analyzer-card text-center d-flex flex-column justify-content-center">
-                        <h3>Overall Resume Score</h3>
-                        <div class="score-radial" style="background: conic-gradient(var(--portal-primary) {{ analysis.overall_score }}%, #e2e8f0 0);">
-                            <div class="score-radial-inner">
-                                <span class="score-val">{{ analysis.overall_score }}</span>
-                                <span class="score-lbl">/ 100</span>
+            <!-- Row 1: Documented Transparent Rubric -->
+            <div class="card shadow-sm border-0 mb-4 text-dark">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <div>
+                            <h3 class="h5 fw-bold mb-1"><i class="fa-solid fa-chart-pie text-primary me-2"></i>Documented Evaluation Rubric</h3>
+                            <div class="rubric-disclaimer">
+                                <i class="fa-solid fa-circle-info me-1"></i>Internal estimate derived from transparent evidence criteria. Not an official employer ATS result or hiring guarantee.
                             </div>
                         </div>
-                        <p class="text-muted px-lg-4 mb-0">
-                            {% if analysis.overall_score >= 85 %}
-                                Outstanding resume quality! Your experience, layout, and phrasing are highly competitive.
-                            {% elif analysis.overall_score >= 70 %}
-                                Solid resume format. Implementing a few recommended updates could significantly boost your job search impact.
-                            {% else %}
-                                Action required. Your resume has critical structural or spelling gaps. Follow the suggestions below.
-                            {% endif %}
-                        </p>
+                        <div class="text-end">
+                            <span class="fs-4 fw-bold text-primary">{{ analysis.overall_score }}</span>
+                            <span class="text-muted">/ 100</span>
+                            <div class="small text-secondary mt-1">ATS Parseability: <strong class="text-primary">{{ analysis.ats_score }}%</strong></div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- ATS Compatibility -->
-                <div class="col-md-6">
-                    <div class="analyzer-card d-flex flex-column justify-content-center">
-                        <h3 class="text-center text-md-start">ATS Compatibility Score</h3>
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-semibold text-secondary">ATS Optimization Fit</span>
-                            <span class="fw-bold text-primary">{{ analysis.ats_score }}%</span>
+                    <!-- 4 Rubric Breakdown Components -->
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-3">
+                            <div class="rubric-card">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small fw-bold text-dark">Content & Evidence</span>
+                                    <span class="badge bg-light text-dark border">{{ analysis.rubric_breakdown.content_evidence_score|default:"20" }} / 25</span>
+                                </div>
+                                <div class="rubric-progress">
+                                    <div class="bg-primary h-100" style="width: {% widthratio analysis.rubric_breakdown.content_evidence_score|default:20 25 100 %}%"></div>
+                                </div>
+                                <p class="small text-muted mb-0 mt-2">{{ analysis.rubric_breakdown.content_evidence_rationale|default:"Evaluated based on verifiable work details." }}</p>
+                            </div>
                         </div>
-                        <div class="ats-bar-container">
-                            <div class="ats-bar" style="width: {{ analysis.ats_score }}%"></div>
+
+                        <div class="col-md-6 col-lg-3">
+                            <div class="rubric-card">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small fw-bold text-dark">Skills Relevance</span>
+                                    <span class="badge bg-light text-dark border">{{ analysis.rubric_breakdown.skills_relevance_score|default:"20" }} / 25</span>
+                                </div>
+                                <div class="rubric-progress">
+                                    <div class="bg-info h-100" style="width: {% widthratio analysis.rubric_breakdown.skills_relevance_score|default:20 25 100 %}%"></div>
+                                </div>
+                                <p class="small text-muted mb-0 mt-2">{{ analysis.rubric_breakdown.skills_relevance_rationale|default:"Evaluated based on clear technical coverage." }}</p>
+                            </div>
                         </div>
-                        <p class="text-muted mb-0 mt-2">
-                            This score indicates how readable your resume formatting, headings, and details are for automated Applicant Tracking Systems. 
-                            {% if analysis.ats_score < 75 %}
-                                Avoid heavy templates, graphics, columns, or text inside tables to improve compliance.
-                            {% else %}
-                                Excellent structure. Your formatting complies well with mainstream search parsing filters.
-                            {% endif %}
-                        </p>
+
+                        <div class="col-md-6 col-lg-3">
+                            <div class="rubric-card">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small fw-bold text-dark">Structure & ATS</span>
+                                    <span class="badge bg-light text-dark border">{{ analysis.rubric_breakdown.structure_formatting_score|default:"20" }} / 25</span>
+                                </div>
+                                <div class="rubric-progress">
+                                    <div class="bg-success h-100" style="width: {% widthratio analysis.rubric_breakdown.structure_formatting_score|default:20 25 100 %}%"></div>
+                                </div>
+                                <p class="small text-muted mb-0 mt-2">{{ analysis.rubric_breakdown.structure_formatting_rationale|default:"Evaluated based on ATS readability." }}</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-3">
+                            <div class="rubric-card">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small fw-bold text-dark">Impact & Outcomes</span>
+                                    <span class="badge bg-light text-dark border">{{ analysis.rubric_breakdown.impact_outcomes_score|default:"20" }} / 25</span>
+                                </div>
+                                <div class="rubric-progress">
+                                    <div class="bg-warning h-100" style="width: {% widthratio analysis.rubric_breakdown.impact_outcomes_score|default:20 25 100 %}%"></div>
+                                </div>
+                                <p class="small text-muted mb-0 mt-2">{{ analysis.rubric_breakdown.impact_outcomes_rationale|default:"Evaluated based on tangible deliverables." }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Row 2: Strengths & Weaknesses -->
-            <div class="row g-4 mb-4">
+            <!-- Target Job Match Section (Displayed ONLY when target job was provided) -->
+            {% if analysis.has_target_job %}
+                <div class="card shadow-sm border-0 mb-4 text-dark">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <h3 class="h5 fw-bold mb-0"><i class="fa-solid fa-briefcase text-primary me-2"></i>Target Job Match: {{ analysis.target_job_title }}</h3>
+                        </div>
+                        {% if analysis.job_fit_summary %}
+                            <p class="text-muted small mb-4 bg-light p-3 rounded">{{ analysis.job_fit_summary }}</p>
+                        {% endif %}
+
+                        <div class="row g-4">
+                            <!-- Matched Requirements -->
+                            <div class="col-md-6">
+                                <div class="analyzer-card matched-card">
+                                    <h3><i class="fa-solid fa-circle-check text-success me-2"></i>Matched Requirements</h3>
+                                    <p class="small text-muted">Requirements from target job supported by evidence in resume:</p>
+                                    <div class="d-flex flex-column gap-3">
+                                        {% for item in analysis.matched_requirements %}
+                                            <div class="border-bottom pb-2">
+                                                <div class="fw-semibold text-dark small"><i class="fa-solid fa-check text-success me-1"></i>{{ item.requirement }}</div>
+                                                {% if item.evidence %}
+                                                    <div class="evidence-quote">"{{ item.evidence }}"</div>
+                                                {% endif %}
+                                            </div>
+                                        {% empty %}
+                                            <p class="small text-muted mb-0">No strong matched requirements identified.</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Missing Requirements -->
+                            <div class="col-md-6">
+                                <div class="analyzer-card missing-card">
+                                    <h3><i class="fa-solid fa-circle-exclamation text-danger me-2"></i>Missing / Gaps for Target Job</h3>
+                                    <p class="small text-muted">Job requirements without supporting evidence in your resume:</p>
+                                    <div class="d-flex flex-column gap-3">
+                                        {% for item in analysis.missing_requirements %}
+                                            <div class="border-bottom pb-2">
+                                                <div class="fw-semibold text-dark small"><i class="fa-solid fa-xmark text-danger me-1"></i>{{ item.requirement }}</div>
+                                                {% if item.note %}
+                                                    <div class="small text-muted mt-1">{{ item.note }}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% empty %}
+                                            <p class="small text-muted mb-0">No major missing requirements found for this job.</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Row 2: Evidence-Backed Strengths & Areas to Improve -->
+            <div class="row g-4 mb-4 text-dark">
                 <!-- Strengths -->
                 <div class="col-md-6">
                     <div class="analyzer-card strength-card">
-                        <h3><i class="fa-solid fa-circle-check text-success me-2"></i>Key Strengths</h3>
-                        <ul class="list-bullets">
-                            {% for strength in analysis.strengths %}
-                                <li>{{ strength }}</li>
+                        <h3><i class="fa-solid fa-shield-halved text-success me-2"></i>Evidence-Based Strengths</h3>
+                        <p class="small text-muted">Strengths supported by verbatim citations from your resume:</p>
+                        <div class="d-flex flex-column gap-3">
+                            {% for item in analysis.evidence_strengths %}
+                                <div class="border-bottom pb-2">
+                                    <div class="fw-semibold text-dark">{{ item.strength }}</div>
+                                    {% if item.evidence %}
+                                        <div class="evidence-quote">"{{ item.evidence }}"</div>
+                                    {% endif %}
+                                    {% if item.analysis %}
+                                        <div class="small text-muted mt-1">{{ item.analysis }}</div>
+                                    {% endif %}
+                                </div>
                             {% empty %}
-                                <li class="text-muted">No specific strengths parsed.</li>
+                                {% for s in analysis.strengths %}
+                                    <div class="border-bottom pb-2">
+                                        <div class="fw-semibold text-dark">{{ s }}</div>
+                                    </div>
+                                {% empty %}
+                                    <p class="small text-muted mb-0">No specific strengths parsed.</p>
+                                {% endfor %}
                             {% endfor %}
-                        </ul>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Weaknesses -->
+                <!-- Areas to Improve -->
                 <div class="col-md-6">
                     <div class="analyzer-card weakness-card">
                         <h3><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>Areas to Improve</h3>
-                        <ul class="list-bullets">
-                            {% for weakness in analysis.weaknesses %}
-                                <li>{{ weakness }}</li>
+                        <p class="small text-muted">Gaps, formatting issues, or points needing reinforcement:</p>
+                        <div class="d-flex flex-column gap-3">
+                            {% for item in analysis.improvement_areas %}
+                                <div class="border-bottom pb-2">
+                                    <div class="fw-semibold text-dark">{{ item.issue }}</div>
+                                    {% if item.evidence_or_gap %}
+                                        <div class="small text-secondary"><span class="fw-bold">Observed in:</span> {{ item.evidence_or_gap }}</div>
+                                    {% endif %}
+                                    {% if item.actionable_fix %}
+                                        <div class="small text-muted mt-1"><i class="fa-solid fa-wrench text-warning me-1"></i>{{ item.actionable_fix }}</div>
+                                    {% endif %}
+                                </div>
                             {% empty %}
-                                <li class="text-muted">No critical issues identified. Good job!</li>
+                                {% for w in analysis.weaknesses %}
+                                    <div class="border-bottom pb-2">
+                                        <div class="fw-semibold text-dark">{{ w }}</div>
+                                    </div>
+                                {% empty %}
+                                    <p class="small text-muted mb-0">No critical issues identified.</p>
+                                {% endfor %}
                             {% endfor %}
-                        </ul>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Row 3: Skills & Roles -->
-            <div class="row g-4 mb-4">
-                <!-- Missing Skills -->
-                <div class="col-md-6">
-                    <div class="analyzer-card">
-                        <h3><i class="fa-solid fa-code text-primary me-2"></i>Missing / Recommended Skills</h3>
-                        <p class="text-muted small">Adding these skills can help match targeted roles:</p>
+            <!-- Actionable Suggestions -->
+            <div class="card shadow-sm border-0 mb-4 text-dark">
+                <div class="card-body p-4">
+                    <h3 class="h5 fw-bold mb-2"><i class="fa-solid fa-lightbulb text-warning me-2"></i>Actionable Improvement Checklist</h3>
+                    <p class="small text-muted mb-3">Resume-specific suggestions. Note: When quantifying outcomes, supply your real numbers:</p>
+                    <ul class="list-group list-group-flush">
+                        {% for suggestion in analysis.actionable_suggestions %}
+                            <li class="list-group-item px-0 py-2 d-flex align-items-start gap-2 text-dark small">
+                                <i class="fa-solid fa-circle-arrow-right text-primary mt-1"></i>
+                                <span>{{ suggestion }}</span>
+                            </li>
+                        {% empty %}
+                            {% for s in analysis.suggestions %}
+                                <li class="list-group-item px-0 py-2 d-flex align-items-start gap-2 text-dark small">
+                                    <i class="fa-solid fa-circle-arrow-right text-primary mt-1"></i>
+                                    <span>{{ s }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="list-group-item px-0 py-2 text-muted small">No suggestions generated.</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Missing Skills (if present from general/target analysis) -->
+            {% if analysis.missing_skills %}
+                <div class="card shadow-sm border-0 mb-4 text-dark">
+                    <div class="card-body p-4">
+                        <h3 class="h5 fw-bold mb-2"><i class="fa-solid fa-tags text-warning me-2"></i>Missing / Recommended Skills</h3>
+                        <p class="small text-muted mb-3">Identified skill gaps for competitive roles:</p>
                         <div class="d-flex flex-wrap gap-2">
                             {% for skill in analysis.missing_skills %}
-                                <span class="badge skill-pill">{{ skill }}</span>
-                            {% empty %}
-                                <span class="text-muted">Profile matches targeted skills excellently.</span>
+                                <span class="badge bg-warning-subtle text-dark border px-2 py-1">{{ skill }}</span>
                             {% endfor %}
                         </div>
                     </div>
                 </div>
+            {% endif %}
 
-                <!-- Recommended Roles -->
-                <div class="col-md-6">
-                    <div class="analyzer-card">
-                        <h3><i class="fa-solid fa-briefcase text-accent me-2"></i>Recommended Career Roles</h3>
-                        <p class="text-muted small">Best fit positions based on your work history and skill stack:</p>
+            <!-- Suggested Roles (Displayed when general analysis or legacy recommended roles exist) -->
+            {% if not analysis.has_target_job and analysis.suggested_roles or analysis.recommended_roles %}
+                <div class="card shadow-sm border-0 mb-4 text-dark">
+                    <div class="card-body p-4">
+                        <h3 class="h5 fw-bold mb-2"><i class="fa-solid fa-compass text-info me-2"></i>Suggested Potential Roles</h3>
+                        <p class="small text-muted mb-3">Roles suggested based on your evidenced skill stack and experience history (General Guidance):</p>
                         <div class="d-flex flex-wrap gap-2">
-                            {% for role in analysis.recommended_roles %}
-                                <span class="badge badge-role">{{ role }}</span>
+                            {% for role in analysis.suggested_roles %}
+                                <span class="badge-pill-soft">{{ role }}</span>
                             {% empty %}
-                                <span class="text-muted">No specific roles identified.</span>
+                                {% for role in analysis.recommended_roles %}
+                                    <span class="badge-pill-soft">{{ role }}</span>
+                                {% endfor %}
                             {% endfor %}
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Row 4: AI Recommendations -->
-            <div class="analyzer-card mb-4">
-                <h3><i class="fa-solid fa-lightbulb text-warning me-2"></i>AI Resume Optimization Suggestions</h3>
-                <ol class="list-bullets">
-                    {% for suggestion in analysis.suggestions %}
-                        <li>{{ suggestion }}</li>
-                    {% empty %}
-                        <li class="text-muted">No suggestions generated. Your resume looks professional!</li>
-                    {% endfor %}
-                </ol>
-            </div>
+            {% endif %}
 
         {% else %}
             <!-- Empty State -->
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <div class="analyzer-card text-center p-5 text-dark">
+                <div class="mb-3">
+                    <i class="fa-solid fa-wand-magic-sparkles fa-3x text-primary"></i>
                 </div>
-                <h2>Analyze Your Resume</h2>
-                <p class="text-muted px-lg-5 mb-4 mx-auto" style="max-width: 600px;">
-                    Understand how well your resume scores against hiring requirements and ATS filters. Get structured insights, strengths, weaknesses, and improvement checklists tailored to your background.
+                <h2 class="h4 fw-bold mb-2">Analyze Your Resume with Evidence Audit</h2>
+                <p class="text-muted small mx-auto mb-4" style="max-width: 550px;">
+                    Get an evidence-backed evaluation of your resume. Identify verified strengths, unquantified bullets, ATS parseability scores, and optional matching against active job postings.
                 </p>
                 {% if profile.resume %}
-                    <button id="btn-analyze-empty" class="btn btn-premium btn-premium-lg">
+                    <button id="btn-analyze-empty" class="btn btn-primary px-4 py-2 fw-semibold">
                         <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Analyze Resume Now
                     </button>
                 {% else %}
-                    <a href="{% url 'users:profile' %}" class="btn btn-outline-dark btn-premium-lg">
+                    <button class="btn btn-primary px-4 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#replaceResumeModal">
                         <i class="fa-solid fa-file-arrow-up me-2"></i>Upload Resume to Begin
-                    </a>
+                    </button>
                 {% endif %}
             </div>
         {% endif %}
+    </div>
+</div>
+
+<!-- Modal: Replace Resume -->
+<div class="modal fade" id="replaceResumeModal" tabindex="-1" aria-labelledby="replaceResumeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content text-dark">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="replaceResumeModalLabel"><i class="fa-solid fa-file-arrow-up text-primary me-2"></i>Upload / Replace Resume</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="replace-resume-form" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="resume-file-input" class="form-label small fw-semibold text-secondary">Select Resume File (.PDF or .DOCX, Max 5MB)</label>
+                        <input class="form-control" type="file" id="resume-file-input" name="resume" accept=".pdf,.docx" required>
+                    </div>
+                    <div id="modal-upload-error" class="alert alert-danger small py-2" style="display: none;"></div>
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-primary" id="btn-save-resume">
+                            <i class="fa-solid fa-upload me-1"></i>Upload & Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -385,23 +613,55 @@
     document.addEventListener("DOMContentLoaded", function() {
         const btnReanalyze = document.getElementById("btn-reanalyze");
         const btnAnalyzeEmpty = document.getElementById("btn-analyze-empty");
+        const btnRetry = document.getElementById("btn-retry");
         
         const loadingContainer = document.getElementById("ai-loading-container");
         const contentScreen = document.getElementById("ai-content-screen");
         const errorContainer = document.getElementById("ai-error-container");
+        const errorMessage = document.getElementById("ai-error-message");
 
-        function triggerAnalysis(button) {
-            button.disabled = true;
+        const targetJobSelect = document.getElementById("target-job-select");
+        const customJobBox = document.getElementById("custom-job-box");
+        const customJobTitle = document.getElementById("custom-job-title");
+        const customJobDesc = document.getElementById("custom-job-desc");
+
+        // Target job selector changes
+        if (targetJobSelect) {
+            targetJobSelect.addEventListener("change", function() {
+                if (targetJobSelect.value === "custom") {
+                    customJobBox.style.display = "block";
+                } else {
+                    customJobBox.style.display = "none";
+                }
+            });
+        }
+
+        function triggerAnalysis(button, forceReanalyze = false) {
+            if (button) button.disabled = true;
             contentScreen.style.display = "none";
             loadingContainer.style.display = "block";
             errorContainer.style.display = "none";
+
+            const payload = {
+                force_reanalyze: forceReanalyze
+            };
+
+            if (targetJobSelect) {
+                if (targetJobSelect.value === "custom") {
+                    payload.job_title = customJobTitle ? customJobTitle.value.trim() : "";
+                    payload.job_description = customJobDesc ? customJobDesc.value.trim() : "";
+                } else if (targetJobSelect.value) {
+                    payload.job_id = targetJobSelect.value;
+                }
+            }
 
             fetch("{% url 'ai:trigger_analysis' %}", {
                 method: "POST",
                 headers: {
                     "X-CSRFToken": "{{ csrf_token }}",
                     "Content-Type": "application/json"
-                }
+                },
+                body: JSON.stringify(payload)
             })
             .then(res => {
                 if (!res.ok) {
@@ -412,31 +672,77 @@
                 return res.json();
             })
             .then(data => {
-                // Success - reload the page to render the new report
                 window.location.reload();
             })
             .catch(err => {
-                // Restore UI and display error
-                button.disabled = false;
+                if (button) button.disabled = false;
                 loadingContainer.style.display = "none";
                 contentScreen.style.display = "block";
                 
-                errorContainer.textContent = err.message;
+                errorMessage.textContent = err.message || "Failed to analyze resume. Please try again.";
                 errorContainer.style.display = "block";
-                // Scroll to error
                 errorContainer.scrollIntoView({ behavior: "smooth" });
             });
         }
 
         if (btnReanalyze) {
             btnReanalyze.addEventListener("click", function() {
-                triggerAnalysis(btnReanalyze);
+                triggerAnalysis(btnReanalyze, true);
             });
         }
 
         if (btnAnalyzeEmpty) {
             btnAnalyzeEmpty.addEventListener("click", function() {
-                triggerAnalysis(btnAnalyzeEmpty);
+                triggerAnalysis(btnAnalyzeEmpty, true);
+            });
+        }
+
+        if (btnRetry) {
+            btnRetry.addEventListener("click", function() {
+                triggerAnalysis(btnReanalyze || btnAnalyzeEmpty, true);
+            });
+        }
+
+        // Replace Resume Form Handler
+        const replaceForm = document.getElementById("replace-resume-form");
+        const modalUploadError = document.getElementById("modal-upload-error");
+        const btnSaveResume = document.getElementById("btn-save-resume");
+
+        if (replaceForm) {
+            replaceForm.addEventListener("submit", function(e) {
+                e.preventDefault();
+                const fileInput = document.getElementById("resume-file-input");
+                if (!fileInput.files || fileInput.files.length === 0) return;
+
+                const formData = new FormData();
+                formData.append("resume", fileInput.files[0]);
+
+                btnSaveResume.disabled = true;
+                btnSaveResume.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Uploading...';
+                modalUploadError.style.display = "none";
+
+                fetch("{% url 'ai:replace_resume' %}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: formData
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        return res.json().then(d => { throw new Error(d.error || "Upload failed."); });
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    window.location.reload();
+                })
+                .catch(err => {
+                    btnSaveResume.disabled = false;
+                    btnSaveResume.innerHTML = '<i class="fa-solid fa-upload me-1"></i>Upload & Save';
+                    modalUploadError.textContent = err.message;
+                    modalUploadError.style.display = "block";
+                });
             });
         }
     });

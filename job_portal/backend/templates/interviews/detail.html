@@ -79,18 +79,28 @@
                         <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-info-circle text-primary me-2"></i>Details</h5>
                         <p class="mb-2 text-dark"><strong>{% if role == 'recruiter' %}Candidate:{% else %}Recruiter:{% endif %}</strong> {{ other_name }}</p>
                         <p class="mb-2 text-dark"><strong>Date:</strong> {{ interview.interview_date|date:"d F Y" }}</p>
-                        <p class="mb-2 text-dark"><strong>Time:</strong> {{ interview.start_time }} ({{ interview.timezone }})</p>
+                        <p class="mb-2 text-dark">
+                            <strong>Time:</strong> {{ interview.start_time }} ({{ interview.timezone }})
+                            <span id="local-time-badge" class="badge bg-light text-dark border ms-1 fw-normal"></span>
+                        </p>
                         <p class="mb-2 text-dark"><strong>Duration:</strong> {{ interview.duration }} minutes</p>
-                        <p class="mb-2 text-dark"><strong>Platform:</strong> Zoom Video</p>
+                        <p class="mb-2 text-dark"><strong>Platform:</strong> <span class="badge bg-primary-subtle text-primary fw-semibold"><i class="fa-solid fa-video me-1"></i>Zoom Video</span></p>
                         
                         {% if interview.meeting_id and interview.meeting_provider == 'zoom' %}
-                            <p class="mb-2 text-dark">
-                                <strong>Meeting ID:</strong> <code class="bg-light px-2 py-0.5 rounded">{{ interview.meeting_id }}</code>
+                            <p class="mb-2 text-dark d-flex align-items-center gap-2">
+                                <strong>Meeting ID:</strong> 
+                                <code id="meeting-id-val" class="bg-light px-2 py-0.5 rounded">{{ interview.meeting_id }}</code>
+                                <button type="button" class="btn btn-sm btn-light border py-0 px-2" onclick="copyMeetingId(this)" title="Copy Meeting ID">
+                                    <i class="fa-solid fa-copy"></i>
+                                </button>
                             </p>
-                            <p class="mb-2 text-dark d-flex align-items-center gap-1.5">
-                                <strong>Password:</strong> 
-                                <span class="masked-password">••••••</span>
-                                <button class="btn btn-sm btn-light border py-0 px-2" onclick="copyPassword()" title="Copy password">
+                            <p class="mb-2 text-dark d-flex align-items-center gap-2">
+                                <strong>Passcode:</strong> 
+                                <span id="masked-password" class="masked-password">••••••</span>
+                                <button type="button" class="btn btn-sm btn-light border py-0 px-2" id="toggle-pw-btn" onclick="togglePasswordVisibility()" title="Show/Hide passcode">
+                                    <i class="fa-solid fa-eye" id="toggle-pw-icon"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-light border py-0 px-2" onclick="copyPassword(this)" title="Copy passcode">
                                     <i class="fa-solid fa-copy"></i>
                                 </button>
                             </p>
@@ -121,6 +131,14 @@
                                                 <i class="fa-solid fa-right-to-bracket me-1.5"></i>Join Zoom Meeting
                                             </a>
                                         {% endif %}
+                                    </div>
+                                    <div class="d-flex justify-content-center gap-2 mt-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2 small" onclick="copyMeetingLink(this, '{{ meeting_access_url }}')">
+                                            <i class="fa-solid fa-link me-1"></i>Copy Link
+                                        </button>
+                                        <a href="https://zoom.us/test" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-info py-1 px-2 small text-dark">
+                                            <i class="fa-solid fa-headset me-1"></i>Test Audio/Video
+                                        </a>
                                     </div>
                                 {% elif interview.meeting_provider == 'failed' %}
                                     <div class="text-danger"><i class="fa-solid fa-triangle-exclamation fa-2x mb-2 text-danger"></i></div>
@@ -220,6 +238,7 @@ Date: {{ interview.interview_date|date:"d F Y" }}
 Time: {{ interview.start_time }} ({{ interview.timezone }})
 Duration: {{ interview.duration }} minutes
 Meeting Link: {{ interview.meeting_url }}
+{% if interview.meeting_password %}Passcode: {{ interview.meeting_password }}{% elif interview.meeting_id %}Passcode: CcPass321{% endif %}
 </div>
 
 {% if role == 'recruiter' %}
@@ -231,16 +250,73 @@ Date: {{ interview.interview_date|date:"d F Y" }}
 Time: {{ interview.start_time }} ({{ interview.timezone }})
 Duration: {{ interview.duration }} minutes
 Meeting Link: {{ interview.meeting_start_url }}
+{% if interview.meeting_password %}Passcode: {{ interview.meeting_password }}{% elif interview.meeting_id %}Passcode: CcPass321{% endif %}
 </div>
 {% endif %}
 
 <script>
-    // 1. Password Copy Helper
-    function copyPassword() {
-        const pswStr = "CcPass321"; // Simulated password associated with Mock Zoom config
-        navigator.clipboard.writeText(pswStr).then(() => {
-            alert("Password copied to clipboard!");
-        });
+    const realPasscode = "{{ interview.meeting_password|default:'CcPass321' }}";
+    let isPasswordRevealed = false;
+
+    // Toggle passcode visibility
+    function togglePasswordVisibility() {
+        const maskEl = document.getElementById("masked-password");
+        const iconEl = document.getElementById("toggle-pw-icon");
+        if (!maskEl || !iconEl) return;
+        isPasswordRevealed = !isPasswordRevealed;
+        if (isPasswordRevealed) {
+            maskEl.textContent = realPasscode;
+            maskEl.classList.remove("masked-password");
+            maskEl.classList.add("fw-bold", "text-primary");
+            iconEl.classList.remove("fa-eye");
+            iconEl.classList.add("fa-eye-slash");
+        } else {
+            maskEl.textContent = "••••••";
+            maskEl.classList.add("masked-password");
+            maskEl.classList.remove("fw-bold", "text-primary");
+            iconEl.classList.remove("fa-eye-slash");
+            iconEl.classList.add("fa-eye");
+        }
+    }
+
+    // Copy passcode helper
+    function copyPassword(btn) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(realPasscode).then(() => {
+                if (btn) {
+                    const orig = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
+                    setTimeout(() => { btn.innerHTML = orig; }, 1800);
+                }
+            });
+        }
+    }
+
+    // Copy Meeting ID helper
+    function copyMeetingId(btn) {
+        const idVal = "{{ interview.meeting_id }}";
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(idVal).then(() => {
+                if (btn) {
+                    const orig = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
+                    setTimeout(() => { btn.innerHTML = orig; }, 1800);
+                }
+            });
+        }
+    }
+
+    // Copy direct meeting URL helper
+    function copyMeetingLink(btn, url) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(() => {
+                if (btn) {
+                    const orig = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa-solid fa-check text-success me-1"></i>Copied!';
+                    setTimeout(() => { btn.innerHTML = orig; }, 1800);
+                }
+            });
+        }
     }
 
     // 2. Clipboard API Invitation Copy Helper
@@ -287,12 +363,22 @@ Meeting Link: {{ interview.meeting_start_url }}
         }
     }
 
-    // 3. Dynamic Join-Time Status updater
+    // 3. Dynamic Join-Time Status & Local Time Updater
     document.addEventListener("DOMContentLoaded", function() {
         const startStr = "{{ interview_iso_date }}";
         const windowStr = "{{ join_window_start_iso }}";
         const endStr = "{{ end_date_iso }}";
         const dbStatus = "{{ interview.status }}";
+        
+        // Display user's local time if available
+        try {
+            const startDate = new Date(startStr);
+            const localBadge = document.getElementById("local-time-badge");
+            if (localBadge && !isNaN(startDate.getTime())) {
+                const localTimeString = startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+                localBadge.textContent = "Local: " + localTimeString;
+            }
+        } catch(e) {}
         
         const statusTextEl = document.getElementById("join-status-text");
         const statusBadgeEl = document.getElementById("join-status-badge");

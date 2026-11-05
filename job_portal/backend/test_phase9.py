@@ -333,6 +333,56 @@ class ResumeAnalyzerTests(TestCase):
         self.assertIn('id="ai-loading-container"', html)
         self.assertIn('id="ai-error-container"', html)
 
+    def test_empty_resume_rejected(self):
+        """Empty resume file raises 400 Bad Request."""
+        empty_path = os.path.join(self.resumes_dir, "empty_resume.pdf")
+        with open(empty_path, "wb") as f:
+            pass  # 0 bytes
+
+        self.seeker_profile.resume = "resumes/empty_resume.pdf"
+        self.seeker_profile.save()
+
+        self.client.login(username="seeker", password="password")
+        response = self.client.post(reverse("ai:trigger_analysis"))
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("empty", response.json()["error"].lower())
+
+    def test_unsupported_format_rejected(self):
+        """Non-PDF/DOCX file raises 400 Bad Request."""
+        txt_path = os.path.join(self.resumes_dir, "resume.txt")
+        with open(txt_path, "wb") as f:
+            f.write(b"Plain text resume")
+
+        self.seeker_profile.resume = "resumes/resume.txt"
+        self.seeker_profile.save()
+
+        self.client.login(username="seeker", password="password")
+        response = self.client.post(reverse("ai:trigger_analysis"))
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Unsupported file format", response.json()["error"])
+
+    def test_docx_resume_analysis(self):
+        """DOCX resume is parsed and analyzed successfully."""
+        import zipfile
+        docx_path = os.path.join(self.resumes_dir, "test_resume.docx")
+        xml_content = (
+            b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            b'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+            b'<w:body><w:p><w:r><w:t>Alice Smith - Senior Python Engineer with Docker and AWS experience.</w:t></w:r></w:p></w:body>'
+            b'</w:document>'
+        )
+        with zipfile.ZipFile(docx_path, "w") as z:
+            z.writestr("word/document.xml", xml_content)
+
+        self.seeker_profile.resume = "resumes/test_resume.docx"
+        self.seeker_profile.save()
+
+        self.client.login(username="seeker", password="password")
+        response = self.client.post(reverse("ai:trigger_analysis"))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["overall_score"], 85)
+
 
 if __name__ == "__main__":
     unittest.main()

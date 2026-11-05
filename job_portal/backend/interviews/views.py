@@ -65,8 +65,13 @@ def schedule_interview(request, application_id):
             return render(request, "interviews/schedule.html", {"application": app})
 
         # Ensure date/time is in the future
-        tz_info = timezone.get_current_timezone()
-        dt_aware = timezone.make_aware(dt, tz_info)
+        try:
+            import zoneinfo
+            tz_info = zoneinfo.ZoneInfo(tz_str)
+        except Exception:
+            tz_info = timezone.get_current_timezone()
+
+        dt_aware = timezone.make_aware(dt, tz_info) if timezone.is_naive(dt) else dt.astimezone(tz_info)
         if dt_aware < timezone.now():
             messages.error(request, "Interview date and time must be in the future.")
             return render(request, "interviews/schedule.html", {"application": app})
@@ -97,7 +102,8 @@ def schedule_interview(request, application_id):
             meeting_provider="none",
             meeting_url="",
             meeting_id="",
-            meeting_start_url=""
+            meeting_start_url="",
+            meeting_password=""
         )
         interview.save()
 
@@ -109,6 +115,7 @@ def schedule_interview(request, application_id):
                 interview.meeting_id = zoom_res["id"]
                 interview.meeting_url = zoom_res["join_url"]
                 interview.meeting_start_url = zoom_res["start_url"]
+                interview.meeting_password = zoom_res.get("password", "")
                 interview.save()
                 messages.success(request, f"Interview '{title}' scheduled and Zoom meeting created successfully.")
             else:
@@ -173,9 +180,11 @@ def list_interviews(request):
     role = profile.role if profile else "jobseeker"
 
     if role == "recruiter":
+        all_qs = Interview.objects(recruiter_id=user_id).order_by("-interview_date")
         upcoming = Interview.objects(recruiter_id=user_id, status="Scheduled").order_by("interview_date")
         past = Interview.objects(recruiter_id=user_id, status__in=["Completed", "Cancelled"]).order_by("-interview_date")
     else:
+        all_qs = Interview.objects(jobseeker_id=user_id).order_by("-interview_date")
         upcoming = Interview.objects(jobseeker_id=user_id, status="Scheduled").order_by("interview_date")
         past = Interview.objects(jobseeker_id=user_id, status__in=["Completed", "Cancelled"]).order_by("-interview_date")
 
@@ -197,6 +206,7 @@ def list_interviews(request):
         return enriched
 
     return render(request, "interviews/list.html", {
+        "interviews": enrich(all_qs),
         "upcoming": enrich(upcoming),
         "past": enrich(past),
         "role": role
@@ -314,6 +324,7 @@ def update_interview_status(request, interview_id, new_status):
             delete_zoom_meeting(interview)
         interview.meeting_url = ""
         interview.meeting_start_url = ""
+        interview.meeting_password = ""
     interview.save()
 
     # If Cancelled, notify applicant in chat and cancel Zoom meeting
@@ -375,6 +386,7 @@ def retry_zoom(request, interview_id):
         interview.meeting_id = zoom_res["id"]
         interview.meeting_url = zoom_res["join_url"]
         interview.meeting_start_url = zoom_res["start_url"]
+        interview.meeting_password = zoom_res.get("password", "")
         interview.save()
         messages.success(request, "Zoom meeting link generated successfully.")
     else:
@@ -434,8 +446,13 @@ def reschedule_interview(request, interview_id):
             return render(request, "interviews/reschedule.html", {"interview": interview, "application": app})
 
         # Ensure future date/time
-        tz_info = timezone.get_current_timezone()
-        dt_aware = timezone.make_aware(dt, tz_info)
+        try:
+            import zoneinfo
+            tz_info = zoneinfo.ZoneInfo(tz_str)
+        except Exception:
+            tz_info = timezone.get_current_timezone()
+
+        dt_aware = timezone.make_aware(dt, tz_info) if timezone.is_naive(dt) else dt.astimezone(tz_info)
         if dt_aware < timezone.now():
             messages.error(request, "Interview date and time must be in the future.")
             return render(request, "interviews/reschedule.html", {"interview": interview, "application": app})

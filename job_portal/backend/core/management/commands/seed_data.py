@@ -65,6 +65,7 @@ class Command(BaseCommand):
             Application.objects.delete()
             Job.objects.delete()
             UserProfile.objects(auth_user_id__in=auth_user_ids).delete()
+            UserProfile.objects(email__in=emails).delete()
             django_users.delete()
             self.stdout.write(self.style.WARNING("Existing seeded data reset completed."))
 
@@ -82,9 +83,12 @@ class Command(BaseCommand):
             user.first_name = entry["name"]
             user.save()
 
-            profile = UserProfile.objects(auth_user_id=user.id).first()
+            profile = UserProfile.objects(email=entry["email"]).first()
+            if not profile:
+                profile = UserProfile.objects(auth_user_id=user.id).first()
             if not profile:
                 profile = UserProfile(auth_user_id=user.id)
+            profile.auth_user_id = user.id
             profile.name = entry["name"]
             profile.email = entry["email"]
             profile.password = user.password
